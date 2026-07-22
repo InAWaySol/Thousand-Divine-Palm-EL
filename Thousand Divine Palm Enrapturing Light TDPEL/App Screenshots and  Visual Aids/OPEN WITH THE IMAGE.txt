@@ -1,0 +1,25 @@
+
+
+
+
+	1. a Trio of Buttons, Green Starts Looking or a trade, Yellow (Simulate) Is the backtesting Button, Magenta Saves all your Collected data to a TImestamped Folder
+
+	2. Five Buttons, ITs for the Weighted Class system for the Hands, Implemented, Not yet utilized, The center button resets to Neutral.
+
+	3. Blue Shows the # of hands for Buying are Active and Red is for Selling, The numbers Below Show the Total Active of the total had.
+
+	4. Blue is for Buy, Red is for Selling, Shows the Apps Consensus and nearness to Sealing the Deal on a trade.
+
+	5. Price chart displays price Relative not to 0 but relative to Itself, A division spread between the Lowest and the highest Price inputted to the chart within the currently displayed table
+
+	6. An artistic Image of the Goddess Guanyin, Displays what Percentage of ALL hands For either Left(SELL) or Right(Buy) are currently active (rounds up If over)
+
+	7. I call it the "Fog Map" A quick and efficient way to display the activity of over 1000 unique algorithms, Also plays a neat animation at the start 
+
+	8. HSRC aka Hand Sync Rate Chart, Shows the Current Consensus of all the hands as it changes over time, Switches between Buying and Selling Hands Automatically
+
+	9. Sliding bar, Shows the MOST RECENTLY activated Hands For the Current Objective, Buying or Selling
+
+	10. The HandBook Home for Descriptions and Modulations of all Algorithms. 
+
+	11. Buy Point and Sell Point SLiders, Allows you to decide what percent of the algorithms need to be active for you to Seal the Deal on a trade.
