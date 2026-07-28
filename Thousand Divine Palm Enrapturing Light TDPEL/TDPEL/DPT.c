@@ -691,7 +691,88 @@ fclose(file);
 return Price;
 }
 
+typedef struct CountOfThree{
+    int Tick;
+    double price;
+    bool Found;
+} CountOfThree;
 
+typedef struct RuleOfThreeParts
+{
+ int Magnitude; // How many ticks coupled together as one to compare,
+ int NextTickToCheck;
+ CountOfThree CountToThree[3];
+}RuleOfThreeParts;
+
+
+RuleOfThreeParts One;
+RuleOfThreeParts Four;
+RuleOfThreeParts Five;
+RuleOfThreeParts Six;
+
+RuleOfThreeParts* RuleOfThreeBinder[4] = {&One, &Four, &Five, &Six};
+
+void RuleOfThree( Hand* HandID,RuleOfThreeParts* ROfTHand){ // MUST be initialized NextTick to CHeck is 0, Tick vals are 0 through count to three, Magnitude default 1, First point default NOT FOUDN, starts at tick 0
+    
+       for (int i = 0; i < 3; i++)
+       { 
+        if (ROfTHand->NextTickToCheck + ROfTHand->Magnitude  < AlgoTick && HandID->Activation == false) // If i have them re -search will need more math to source a new working starting tick
+    { 
+        double price = 0;
+         if (ROfTHand->CountToThree[i].Found == true)
+         {ROfTHand->NextTickToCheck = ROfTHand->CountToThree[i].Tick + ROfTHand->Magnitude;
+        continue;
+    (" Continue %s\n", HandID->ID);}
+
+         if (ROfTHand->CountToThree[i].Found == false)
+         { //printf(" SEARCHING Check %s\n", HandID->ID);
+           for (int k = 0; k < ROfTHand->Magnitude; k++)
+           {
+            price = GetPriceAtTick(ROfTHand->NextTickToCheck + k); // If 0 gets the first line 1 gets the seconds
+            ROfTHand->CountToThree[i].price = ((ROfTHand->CountToThree[i].price * k) + price) / (k + 1); // Should work, if not remove parantehses on K + 1
+
+           }
+           if (i == 0)
+           { printf(" First Point found %s\n", HandID->ID);
+           ROfTHand->CountToThree[i].Found = true;
+           ROfTHand->CountToThree[i].Tick = ROfTHand->NextTickToCheck;
+           }
+           if ( i != 0)
+           {
+             if ( ROfTHand->CountToThree[i].price > ROfTHand->CountToThree[i-1].price )
+           { 
+             ROfTHand->CountToThree[i].Found = true;
+            ROfTHand->CountToThree[i].Tick = ROfTHand->NextTickToCheck;
+           }
+           if (ROfTHand->CountToThree[i].price < ROfTHand->CountToThree[i-1].price)
+           { printf(" Trying again %s  %d\n", HandID->ID, i);
+  // should only ever be el se If its the second or third Count,
+           //Price is ALWAYS gonna be more than 0
+           for (int b = 0; b < 3; b++)
+       {  ROfTHand->CountToThree[b].Found = false;}
+        // ROfTHand->NextTickToCheck = ; // stays the same
+           }
+           }
+           
+          
+         
+         }
+         
+         if (ROfTHand->CountToThree[1].Found == true)
+         { printf(" RO3 hand FOund %s\n", HandID->ID);
+           HandID->Activation = true;
+           HandID->ActivationRate = 100;
+         }
+         // Can later add a continuation PURELY for data collection reasons, If the third is found as expcted, ! point to its accuracy on the track record,
+         
+       }
+    }
+       return;
+    
+    
+    
+
+}
 
 void HandTypePloint( Hand* HandID, HandTypePlointArch* Shape) {
    
@@ -2048,6 +2129,25 @@ if (runonce < 1)
 loopActive == false;
 
 
+for (int d = 0; d < 4; d++)
+{
+    RuleOfThreeParts* init = RuleOfThreeBinder[d];
+    init->NextTickToCheck = 0;
+    init->Magnitude = 1;
+    for (int w = 0; w < d; w++)
+    {
+         init->Magnitude *= 10; 
+        
+    }
+     printf("R of 3 Mag%d\n",init->Magnitude );
+ 
+   for (int h = 0; h <3; h++)
+    {    
+         init->CountToThree[h].Found= false;
+         init->CountToThree[h].price = 0;
+         init->CountToThree[h].Tick= 0;
+    }
+}
 
 
 for (int f = 0; f < (sizeof(*RelativeLocationA)/2); f++)
@@ -3577,6 +3677,11 @@ HandTypePloint( &VII, &Seven);
 HandTypePloint( &XVIII, &EightTeen); 
 //Empty LOL, Private info
 
+
+RuleOfThree( &I,&One ); // Mag 1
+RuleOfThree( &IV,&Four); // Mag 10
+RuleOfThree( &V,&Five); // Mag 100
+RuleOfThree( &VI,&Six); // Mag 1000
 
 
 
