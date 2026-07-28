@@ -34,7 +34,8 @@ double SlideCounter = 0;
 double SlideRate = 3;
 int SlideMax = 1;
 double SlideMaxAdd = 0;
-int HSRPC = HSRPlointcount -1;
+int HSRPC = HSRPlointcount -1; // Deprecate this mes right here
+int PricePC = PricePlointcount; // Deprecate this mes right here
 int SRChartUpdatelog = 0;
 int PriceChartUpdatelog = 0;
 int SRChartTempVal = 0;
@@ -126,29 +127,29 @@ bool ConnectionActivated = false;
 int InitOnce = 0;
 int PurelyVisualPrettiness = 9;
 bool ApplyAndSaveHTA = false;
- SDL_Window *BOOK;
-SDL_Renderer *Bookrenderer;
-SDL_Texture *BookTexture;
-SDL_Texture *PlointTexture;
-SDL_Texture *BookTextTexture;
-SDL_Texture *BookBasicTexture;
-SDL_Texture *BookCoverTexture;
-SDL_Texture *HRankSTexture;
-SDL_Texture *HRankATexture;
-SDL_Texture *HRankBTexture;
-SDL_Texture *HRankCTexture;
-SDL_Texture *HRankDTexture;
+ SDL_Window *BOOK = NULL;
+SDL_Renderer *Bookrenderer = NULL;
+SDL_Texture *BookTexture = NULL;
+SDL_Texture *PlointTexture = NULL;
+SDL_Texture *BookTextTexture= NULL;
+SDL_Texture *BookBasicTexture= NULL;
+SDL_Texture *BookCoverTexture = NULL;
+SDL_Texture *HRankSTexture = NULL;
+SDL_Texture *HRankATexture = NULL;
+SDL_Texture *HRankBTexture = NULL;
+SDL_Texture *HRankCTexture = NULL;
+SDL_Texture *HRankDTexture = NULL;
 
-SDL_Surface *BookCoverSurface;
-SDL_Surface *BookBasicSurface;
-SDL_Surface *bookSurface;
-SDL_Surface *BookText;
-SDL_Surface *PlointSurface;
-SDL_Surface *HRankS;
-SDL_Surface *HRankA;
-SDL_Surface *HRankB;
-SDL_Surface *HRankC;
-SDL_Surface *HRankD;
+SDL_Surface *BookCoverSurface = NULL;
+SDL_Surface *BookBasicSurface = NULL;
+SDL_Surface *bookSurface = NULL;
+SDL_Surface *BookText = NULL;
+SDL_Surface *PlointSurface = NULL;
+SDL_Surface *HRankS = NULL;
+SDL_Surface *HRankA = NULL;
+SDL_Surface *HRankB = NULL;
+SDL_Surface *HRankC = NULL;
+SDL_Surface *HRankD = NULL;
    // DEFAULT DEFINEMENT //
 
 
@@ -173,14 +174,20 @@ typedef struct {
 
  Dot dots[MAX_DOTS];
 
-
+// Create a dot and add it to the array.
 
 
 typedef struct  
 {
  int Boost;
  bool Active;  
-}Virtue; 
+}Virtue; // the 5 virtues, These highlight certain hands(trading techniuqes) depending on the your Trading enviroment, Low Risk, High risk(HUGE oversimplification, The risk is always the same)
+//Code in at what point is it acceptable to buy the asset
+//based on percent approval
+//Have the Settings for the app be a text doc, so BClass = Bsum, and B sum 
+// equals whatever is input at that entry into the text doc, 
+//Functions to edit all the settings individually in your own personal text doc,
+//The code generates the text doc with preset sums ill make up later
     
 typedef struct  
 {  
@@ -223,6 +230,7 @@ void createDumpFiles() {
     FILE *file;
 
     for (int i = 0; i < numFiles; ++i) {
+        // Check if file exists
         file = fopen(filenames[i], "a");
         if (file != NULL) {
             printf("File '%s' already exists. Skipping.\n", filenames[i]);
@@ -345,7 +353,7 @@ typedef struct {
 
 typedef struct{
     int Tick;
-    float Price; 
+    float Price; // Dollar amount, Why? just because.
     float TrueRelativity; // The Ploints RElativity to the starting Point, Its TRUE designation
     int PlointFound; // 1 is found, 0 if not yet found
     int HigherLower; // 1 for higher, 0 for lower, gets sorted at runtime, Looped like all the other settings.
@@ -435,7 +443,8 @@ void SaveSetting(const char* filename, int lineNumber, const char* text)
     fclose(file);
 }
 
-void SavetoHandLog(int StructLoc){ 
+void SavetoHandLog(int StructLoc){ // Appp is corrupting here, Before the entry, But by the exit of this func
+                                    // its partially corrupted the struct.
 // The Struct should already be properly updated, Save button already hit. That happened down below, Save it to its correct place in the text doc
 char HTABuffer[100] = "";
 char HandTAFormat[100] = "";
@@ -448,8 +457,9 @@ strcpy(HTABuffer,"");
 
 for (size_t y = 1; y < Chosen->Size; y++) // I should be able to let it process the start too, It should all equal zero,, But I wont. Skipping it entirely is cleaner.
 {
-//The first point is the start, its vals are all ZEro, It shouldnt be being read, Its a known stable position    
+//The first point is the start, its vals are all ZEro, Its shouldnt be being read, Its a known stable position    
 snprintf(HTABuffer, sizeof(HTABuffer),"%d %.0f %d ", Chosen->PriceArr[y].HigherLower, Chosen->PriceArr[y].TrueRelativity, Chosen->Times[y-1] );
+//printf("HL %d", Chosen->PriceArr[y].HigherLower);
  strcat(HandTAFormat,HTABuffer);
  strcpy(HTABuffer,"");
 }
@@ -457,7 +467,7 @@ snprintf(HTABuffer, sizeof(HTABuffer),"%d %.0f %d ", Chosen->PriceArr[y].HigherL
 
 SaveSetting("ArcTypeHANDs.txt",StructLoc +1,HandTAFormat);
 
-
+//printf("HERE %s\n",HandTAFormat);
 }
 
 
@@ -496,7 +506,7 @@ for (int z = 0; z < 100; z++)
                {
                 tempBuf[0] = line[z];
                 tempBuf[1] = '\0';
-                strcat(NumSortBuffer,tempBuf); 
+                strcat(NumSortBuffer,tempBuf); // Only captures one letter, Strange. Maybe a loop UNTIL Z coord equals ' ' aka Spacebar
                 strcpy(tempBuf,"");
                }
                 else{
@@ -510,7 +520,7 @@ for (int z = 0; z < 100; z++)
                     NumsSorted++; 
                     break;
                     case 1:
-                    TimeSpreadf = atof(NumSortBuffer); 
+                    TimeSpreadf = atof(NumSortBuffer); // make sure this correlates correctly to how the data is saved in teh sext file, may need to swap this and pSpreadf
                     Chose->TimeSpread = atoi(NumSortBuffer);
                     strcpy(NumSortBuffer, "");
                   //  printf("TimeSpread %d\n",Chose->TimeSpread);
@@ -534,11 +544,12 @@ for (int z = 0; z < 100; z++)
                     break;
                 }
                 }
-              
+              // Do the dots here and find otu why they  no longer render,
             }
             
         
             
+//printf("HL After %d Z:%d\n", Chose->PriceArr[1].HigherLower, z);
 if (NumsSorted == 4)
 {
 for (int i = 1; i < Chose->Size; i++)
@@ -608,10 +619,11 @@ Plointdest[e].h = 9;
                 
                Plointdest[k].x = Plointdest[k-1].x + (Chose->Times[k-1] + PurelyVisualPrettiness);
                Plointdest[k].w = 9;
-               Plointdest[k].h = 9; 
+               Plointdest[k].h = 9; // can convert all of these coords into percentages so its automatically mathematically Correct with a min distance of 1 pixel, Relative to the distance of the furthest one out, aND A hard limit on the furthest one out which is the last ploint, so if its
+               // 6 ploints than the 6th ploint cant go past the farthest edge, and none can go past it.
              }
              
-            
+            //printf("%s", line);  // line already contains newline
           
             fclose(file);
             break;
@@ -621,9 +633,18 @@ Plointdest[e].h = 9;
    
 }
 
+//takes the data in the text doc and updates the visual vals in code, not the struct
+// only updates the visual because only saving can update the struct in code, and thats alright,
+
+//HandTypePlointArch GetHandData (int Page){
+// go into the HandLog.txt file, that string becomes the sums of the hands struct at startup, Use the roman NUmeral 
+//ID and the Hand finder filter in the book page method to Find the Hand, Hand.ID = Name of HandTypePloint ARch we are looking for, 
+//So pull the data from the code that way.
+//}
 
 
-double GetPriceAtTick (int Tick){ 
+
+double GetPriceAtTick (int Tick){ // Ill probably run my app 1 tick behind so we can reliably pluck data from our own personal text store,
 
 double Price;
 if ( Tick == LatestTick)
@@ -664,6 +685,8 @@ else
     Price = 0.0;
 }
 
+
+
 fclose(file);
 return Price;
 }
@@ -674,9 +697,9 @@ void HandTypePloint( Hand* HandID, HandTypePlointArch* Shape) {
    
 
 if (Shape->StartingTick == 0) // They all start on zero even if started late, 
-   {                           
+   {                            // May have to preload all the starting ticks with zero,
     Shape->StartingTick = AlgoTick; // Also the price store txt file has to capture and date as much data as possible, and for calculations reset the one it reads from at the start of the app, make a new file,
-   }                             
+   }                                  // Shutdown procedure, thats a tad bit of dummy proofing, 
 
     Shape->PriceArr[0].PlointFound = true; // The Beginning
     Shape->PriceArr[0].Tick = Shape->StartingTick;
@@ -706,7 +729,7 @@ for (size_t L = 0; L < Shape->Size; L++)
     if (L == Shape->Size -1)
     {
         HandID->Activation = true;
-        printf("Hand Activated  Hand: %s Title: %s\n",HandID->ID, HandID->Name);
+       // printf("Hand Activated  Hand: %s Title: %s\n",HandID->ID, HandID->Name);
         //Play sound
         return; //Exit
     }
@@ -731,6 +754,16 @@ for (size_t L = 0; L < Shape->Size; L++)
     printf("Next Viable Tick Not yet Arisen   Hand: %s Title: %s  Next Tick: %d\n",HandID->ID, HandID->Name,Shape->NextTicktoCheck );
     return;} 
 
+    //This function takes in a hand struct ID(and all its members)
+    //Ploint count, T for time from Ploint 1 to 2 and so on, so # of unique T vals is Ploint count -1, If not that many return error
+    //Hand Struct, Ploint Layout Struct, Ploint(x,y), Times, Single Price Spread, Single Time Spread Val
+    //Then in function code that makes sure Its HIGHer or lower as it should be corresponding to the original Input, Ploint 2 being higher in price than 1 etc.
+    //Checks the tick, check notebook for complex alg you planned out already
+    // Need that Dynamic Array from Size 2 to 10
+    // FUCK doing a resizable array in C, we are gonna do a max of 10 but only read the number said to sent with the funtcion
+    // Will need to be able to access all prior price ploints and current, Starting from 1 onward,
+    //The end goal is to create the min max for every ploints time and price, and check if both true, If not before time expiry, Check the next starting ploint,
+    // Check 3 price points at a time until the Potential Start = The most current price
 
 if (Shape->NextTicktoCheck - Shape->PriceArr[Shape->LastPlointFound].Tick <= TMax || Shape->NextTicktoCheck - Shape->PriceArr[Shape->LastPlointFound].Tick >= TMin ){
 if (Price > PMin || Price < PMax)
@@ -1048,7 +1081,8 @@ void SimulatePriceChange(double *pez)
 {
     static float data[240];
     static int index = 0;
-    static int loaded = 0; 
+    static int loaded = 0;
+//printf("Price %.0lf\n", *pez); // error here, Occaisonally stops at 30 and goes back down, Wait, The ENd of the file, DUH
     if (!loaded)
     {
         FILE *f = fopen("SimuData.txt", "r");
@@ -1477,6 +1511,67 @@ else{
 }
 
 
+
+
+
+
+        
+        // Mandatory 1 minute Minimum wait + TimeToWait // TIme to wait Increases NO FASTER than every 3 bad trades OVERALL, sO IF I GET 2 - 3% but 1 +10% overal we did good,
+        //Waittimeishandledinthe Body,Doit activatesfirst, Oncewaittime good,Then send
+        // If it goes on a winning streak it basically does nothing
+        //Send Message until recieved // 
+        // the Send Messenger NEeds to be Independant of this if statemnet, This is just the final decision making part, The Big weighted Wait will be here tho.
+        
+         //NO Minimum wait To sell, may strangely be needed but I dont think so Yeah so it doesnt insta sell, and the wait will have it ignore some short lived volatility and open the door for more long standing trades instead. 
+        //Send Message until recieved check if 30 seconds have passed since the last send, IF so Send again, Increa // Once message is recieved continue to next steps,
+
+        // Its all in the hands of the algorithm go through the data timestamped and compare it with the chart, see what Levels would be winning the most accorss that time frame,
+        // maybe if market slow auto lower the NEeded amount to go for a trade? hmm
+// MAIN thing left to do, The Text logger, text reader, And The Minimum wait code
+//The Thirty seconds wait between sends just gives us a spread to get around and short server lag spikes Or Fickleness of the Judging algorithm
+
+  // aNTI spam func, IF Bool is true, Buy, Dont send again until this amount of time has passed, Bool is still true and Bool of IfMessageRecieved is still False
+    //IF BOOL Buy is true, and Bool IfMessageRecive is false and Time limit is up, Send again, Once sent again Increase cycle count by 1,
+    // will send out the message 5 times with a UNIQUE id that is the Ticks Cycle number from the API, Buy bool stays true as long as it wants to
+    //wwants too via the algorithms calculations, Hence the secondary bool, Itll keep trying to send but fail because the message was recieved,
+    // Status REset upon Nor Latch Toggle from Buy to Sell,
+    // Calculate good determination to switch from one to another, Simple and clean. 
+    // If too many back and forths made in too short of a time span, Say 10 in 1 hr, Multiply the minimum wait time by 10, then reset the count to be from that moment on
+    // from the time of the  reset forward, IF the bots record of buy and sell On its own Excution speed, The price At the moment of bool Activation
+    // To the price at the time of Nor Latch switching, (we only do longs) If it is profitable OVERRIDE the Exponentional increase of minimum wait.
+    // Additive percent gain, If up by even .1% let it do its thing, 
+    //Now just the norlatch logic, We got all the BUy and sell Spam Logic,
+    // NorLatch logic, Simple, If Buy, Buy Because thats ALL we havent done that we need to do, Also when sending out these signal Have a proceeding Code so we can ignore old info
+    // Ignore old info OR correct ourselves if we have missed a couple, Which is a super big failure that should come if we have a OK connection.
+    // The app regulates if its stilla  good time to buy and sell on its own, So just send me a message if the signal is bad, Somehow.
+    //If buy, Buy, IF sell comes on AFter a Buy, Yeah a Chain, If you bought, we are only accepting Sells, and so on, with a minimum wait 
+    //that only activates when it tries to make the switch
+    //And Viola, its done.
+
+
+
+
+
+
+// iF any of these variables change, OR 7 seconds have passed, Send a signal out, The full brick of all info,
+// then at the website side 
+// Nah, not if they change, Theres cheaper ways to find incongruency.
+// if the sent Tick is Less than the latest the website just sent out,
+// web side, If tick sent as a response is 2 less(doing 2 avoids us having to do precise timign calculation, its not that serious) than the latest sent, ITs atleast 1 that it missed,
+//if (GlobalPTick > PrevGlobalPTick | ( ) )
+//{
+    /* code */
+//}
+//PrevGlobalPTick = 0;
+
+
+
+
+
+
+// Which ever hand last became active that triggers the ability to display all active hands at the bottom scrolling, In order of last to become active, SO
+// AS a hand becomes active, Its ID gets concatenized to the beginning of the string, and displayed
+// SDL delay inside the X val slide loop should fix the sync problem
 int main(int argc, char* argv[]) {
 SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO); 
     SDL_Window* window = SDL_CreateWindow("Thousand Divine Palms: Enrapturing Light", 512, 512, 0| SDL_WINDOW_BORDERLESS);
@@ -1558,7 +1653,6 @@ SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
                             SDL_PutAudioStreamData(stream,
                                NewSoundData,
                                NewSoundLength);
-                   
                    // Any setup to input the users API link, Or use the one recorded in the text doc, displayed in the text box already, If changed, it updates the text doc, // Future feature, V3.v  
                     buttonClicked = true;
                 }
@@ -1715,7 +1809,7 @@ Uint32 winID = SDL_GetWindowID(win);
                     if (BluedraggingSlider) {
                         int newX = interact.motion.x;
                         newX = MAX(BluesliderStartX, MIN(newX, BluesliderStartX + BluesliderMaxRange));
-                        BlueSliderKnob.x = interact.motion.x;
+                        BlueSliderKnob.x = newX;
                         // Each 2 pixels = 1 point
                         BuyPoint = (BlueSliderKnob.x - BluesliderStartX) / 2;
                         if (BuyPoint < 1){ BuyPoint = 1;}
@@ -1954,6 +2048,8 @@ if (runonce < 1)
 loopActive == false;
 
 
+
+
 for (int f = 0; f < (sizeof(*RelativeLocationA)/2); f++)
 {
     HandTypePlointArch* Seed = RelativeLocationA[f];
@@ -2022,6 +2118,24 @@ printf("INITIALIZED\n\n");}
             }
        
 
+
+
+
+
+
+// ? ? ?  NETWORKING   ? ? ? //
+
+/* // Currently it just silently tries to connect until it does, Will I ever need or want a switch>
+if (ConnectionActivated)
+{  
+
+}*/
+
+
+    //HTTP_Process();
+
+
+// ? ? ?  NETWORKING   ? ? ? //
 
 
 
@@ -2902,6 +3016,10 @@ for (int d = 0; d < strlen(GUITextBox[7].Text); d++)
             // Price by the previous price, 1.000, if less than 1, Then place it the different below the previous
             // if more than 1, Thant the difference Up Above
             
+
+            SDL_RenderTexture(renderer, Blueknobtexture, NULL, &BlueSliderKnob);
+            SDL_RenderTexture(renderer, RedknobtTexture, NULL, &RedSliderKnob);
+
           switch (FocusWheelSetting)
           {
         case 0:
@@ -2924,8 +3042,6 @@ for (int d = 0; d < strlen(GUITextBox[7].Text); d++)
             break;
           }
 
-            SDL_RenderTexture(renderer, Blueknobtexture, NULL, &BlueSliderKnob);
-            SDL_RenderTexture(renderer, RedknobtTexture, NULL, &RedSliderKnob);
 
             if (loopActive) {
                 SDL_RenderTexture(renderer, StopButtontexture, NULL, &LoopButton);
@@ -3117,7 +3233,10 @@ if (Remainder > ((Plointct - d) * 9))
     
 }*/
 
-
+//Just make it so NO one prior can move ahead of the one in front of its place -9 aka PurelyVisualPrettiness
+// SO instead of moving them up it just stops moving, But i like the sweep feature so calc it to let it stop ahead,
+// Cant move past if the the remainder of the space is equal too or would be less than the ACTIVE proceeding Ploints width. SO if REmainer < (Ploint count - Currentploint Number) * 9, current ploint cant move past that number, So it just pushs
+// them all up against the wwall Butt to butt 
 if (d > 0)
 {
 if (Plointdest[d].x <= Plointdest[d-1].x){Plointdest[d].x = Plointdest[d-1].x + PurelyVisualPrettiness;}
@@ -3126,6 +3245,10 @@ if (Plointdest[d].x <= Plointdest[d-1].x){Plointdest[d].x = Plointdest[d-1].x + 
 
 
 
+//Plointdest[d].x += 10 *d; // fix this, It defaults to zero, not the norm,Sterilize it , Render them seperate of all other numvers the try again
+
+//Plointdest[d].y = 10 *d;
+//printf("Ploint X %.2f, Ploint Y %.2f",Plointdest[d].x ,Plointdest[d].y);
     SDL_RenderTexture(Bookrenderer, PlointTexture, &Plointsrc, &Plointdest[d]); // Just make a array of page numbers beside that correlate to the proper struct, So Find 2 in the array, Then that say placement is the accurate place in the main array of all structs
                                                                                 // So now page = struct location with this label array It wont be a function. But all In house down here, then whats applied, Then saved via a void function
 }}
@@ -3199,16 +3322,19 @@ for (size_t y = 1; y < 10; y++) // I should be able to let it process the start 
        //printf("TR %f\n",(Plointdest[y-1].y - Plointdest[y].y));
     }
     //printf("HL %d", Selected->PriceArr[y].HigherLower);
-    Selected->Times[y-1] = (Plointdest[y].x - Plointdest[y-1].x) - PurelyVisualPrettiness;}
+    Selected->Times[y-1] = (Plointdest[y].x - Plointdest[y-1].x) - PurelyVisualPrettiness; // So everypixel is 1 x TimeMaginitude, but thall be done in the calculation phase
+// ALSO with the time mag, IF number larger than, Divide the time table in seconds not just be 60 for secs, But 60 again for hours, and  if its more than a day in seconds, By 24 also, 3 if statements in sequence, E
+}
 ApplyAndSaveHTA = false; // A button makes this true
 SavetoHandLog(i); // takes the already updated struct and puts it to the text file
 printf("Saved Hand %d\n", i);
     break;
     }
-  } 
+  } // May still not be done right, Either a GLOBAL error Causing problems, OR what, No known source, Putting negative numbers in teh save file shouldnt happen
 }
 
 
+//SavetoHandLog(Page);
 //SDL_SetRenderDrawColor(Bookrenderer,105,200, 205, 185);
 //SDL_RenderFillRect(Bookrenderer, &PlointCTLeft);
 //SDL_RenderFillRect(Bookrenderer, &TimeSpreadLeft);
@@ -3227,7 +3353,7 @@ if (Page != 0)
 char PageNumberbuffer[100];
 snprintf(PageNumberbuffer, sizeof(PageNumberbuffer),"%d", Page); 
 strcpy(PageNumber.Text, "");
-strcat(PageNumber.Text, PageNumberbuffer); 
+strcat(PageNumber.Text, PageNumberbuffer); // leaves a stray dot if you go up past 2 digits then go back down, very strange will fix later
 strcat(PageNumber.Text, ".!");
 strcpy(PageNumberbuffer, ""); 
 TypeTextToScreen(&PageNumber, 1, 280, 5);
@@ -3243,6 +3369,7 @@ TypeTextToScreen(&DescText, 1, 26, 110);
 for (int d = 0; d < strlen(DescText.Text); d++)
 {SDL_RenderTexture(Bookrenderer, BookTextTexture, &DescText.srcrect[d], &DescText.destrect[d]);}
 
+// Add the Rank BAdge on here too
 char TrackRecordbuffer[100];
 strcpy(TrackRecord.Text, "");
 snprintf(TrackRecordbuffer, sizeof(TrackRecordbuffer),"%d**%d**%d!", Page, Page, Page); 
@@ -3291,15 +3418,16 @@ SDL_RenderPresent(Bookrenderer);
 
           if (currentTime >= TimeOfActivation + TimeToWait )// Whatever is calculated using Performence judger logic, thats how long the wait is, Its outlined in text how it is to function YW <3
         {
-
+// Do the Wait timer code here, 
+// hand the Waittime Code here, // seperate of the 30 second cycle
 //ToastNotification("Transmission in Time 2!", 0);
-          if (currentTime >= LastTimeThirty + 30000){// 30,000 is  30 seconds
+          if (currentTime >= LastTimeThirty + 30000){// 30,000 is supposed to be 30 seconds
    
            ToastNotification("Transmission !", 0);
             LastTimeThirty = currentTime;
             TransmissionCT++;
             
-             printf("Preparing the Data\n"); // Bogus claim but sounds positive to the user
+             //printf("Preparing the Data\n"); // Bogus claim but sounds positive to the user
 
  if (RLMODE == 0)
     {
@@ -3307,10 +3435,14 @@ SDL_RenderPresent(Bookrenderer);
         if (IsMessageRecieved == 0)
         {
             // Send the Buy Signal once, Code thats in the BODY handles the repeat and its timing
+        // QueueMessage("Buy");
         msgBuySignal = 1;
         }
     }
-if (RLMODE == 1)
+// THis is only to make trades, Another hotlink will be needed TO connect to the site, and keep both tethered,
+// will transmit Price, Tick, Volume, to the app
+// app will send CLimax for both Buy and sell,  RLMODE and Tick Back to the site, as a minimum, They share Tick as a Form of handshake to ensure they stay in sync, Notify me if its out of sync, Depending on hwo its ut of sync ill make a solution,
+ if (RLMODE == 1)
     {
         SoldPrice = GlobalPrice;
         if (IsMessageRecieved == 0)
@@ -3324,7 +3456,7 @@ if (RLMODE == 1)
     {
 
     msgBuySignal = 0;
-// Never SHould both be triggered at one time. Because of the RLMODe switch,
+// Never SHould both be triggered at one time. Because of the RLMODe switch, If that happens I Got the order flipped around somewhere, 0 is Buy, 1 is Sell
     msgSellSignal = 0;
     
         RLMODE = !RLMODE;
@@ -3343,7 +3475,7 @@ float PercentChange = 0;
         }
         if (BoughtPrice < SoldPrice)
         {
-            PercentChange = ((SoldPrice / 100) * (SoldPrice - BoughtPrice)); 
+            PercentChange = ((SoldPrice / 100) * (SoldPrice - BoughtPrice)); // hasnt been tested but no reason it shouldnt work.
         }
 
 char PerformenceBuffer[100] = "";
@@ -3387,14 +3519,14 @@ appendToFile("PerformenceLog.txt",PerformenceSheetFormat); // just adds it to wh
 
 
 
- 
+//HANDARCTYPE is has its data stored in the order it is called, No new organization system, THE ULTIMATE simple method
 
 
-                
+                // Algorithm LOOP //
         
 if (Simul == true)
 {
-   if (currentTime - lastTime >= 333) {  
+   if (currentTime - lastTime >= 333) {  // Just delete thi whol ebracketed segment when your done testing
 SimulatePriceChange(&GlobalPrice);
  UpdatePriceChart(GlobalPrice);
          char BufferGPrice[10] = "";
@@ -3408,9 +3540,9 @@ lastTime = currentTime;
 
 
 
- if (loopActive == true && AlgoTick < LatestTick) { // Just for back and forth check purposes, So it updates when a new arrives, No sooner, and no other time,
-            /
-AlgoTick++; //basic Number The Part CUrrently being calculated Others are Logistical Truthes directly coordinated with the price data coming in,
+ if (loopActive == true && AlgoTick < LatestTick) { // Just for back and forth check purposes, So it updates when a new arrives, No sooner, and no other time, GlobalPtick is useless beyond that, 
+            //Just Latest, And Algo, The Latest we have and the the Part the ALgorithms are currently Caught up to 
+AlgoTick++; //basic Number Others are Logistical Truthes directly coordinated with the price data coming in,
 
 UpdateSRChart(Climax); 
 Climax = RLMODE ?   PercenttoBuy : PercenttoSell;
@@ -3419,8 +3551,13 @@ BrokerADeal(); // always called always looking for a trade when its getting data
 //printf("Calculating..\n");
 // THE PRICE USED FOR THE ALGORITHMS //
 
-double ALGOPrice = GetPriceAtTick(AlgoTick);
-printf("Algo Price $%lf\n", ALGOPrice);
+double ALGOPrice = GetPriceAtTick(AlgoTick); // Price CAtchup mechanism, Set a Proper Shutdown procedure, Log In the file Cut while live trading, Then auto prompt The user to put in the tick it left off at to insta catchup wheere it left off, Or do a AUTO check, SO click 
+//printf("Algo Price $%lf\n", ALGOPrice); // DO you want to catch up? Number input box is greyed out, Auto check box is checked, have to uncheckmark it to put in a number, Auto runs the whole pricelog TO see where it left off OR uses a stored val to Collect all that data then 
+// Yup, Save all the incoming Price data to a text file using the function we already have for that,
+//Append,
+//then get it from their so we can start trading at our own leisure, 
+// THE PRICE USED FOR THE ALGORITHMS //
+
 //??????????????????????????????????????????????????????????????//
 //''//''//''//''//''//''//''//''//''//''//''//''//''//''//''//''//
 
@@ -3438,10 +3575,7 @@ HandTypePloint( &II, &Two);
 HandTypePloint( &III, &Three);
 HandTypePloint( &VII, &Seven);
 HandTypePloint( &XVIII, &EightTeen); 
-
-
-
-
+//Empty LOL, Private info
 
 
 
@@ -3465,7 +3599,7 @@ HandTypePloint( &XVIII, &EightTeen);
 
 
 RTotalActive = 0; // whether a hand deactivates is up to it, Some only need be found once and for all until reset.
-
+// use the same Hand struct, But Make a Left hand for loop for sell methods // The expirey of things, and the overall Expansion and contraction of the apps forces needs to be addressed, Later, We will have a System for it, Already have one for Consistent losing trades to force a timing change up or a freeze.
 for (int i = 0; i < 12; i++) {
 
     Hand* Rh = Righthands[i];
@@ -3580,8 +3714,8 @@ for (int i = 0; i < 12; i++) {
 }
 
 SellPnt = LMaxWeight / 100 * LPercentSelected;
-ChangeCheck(LactiveIDs, LpreviousActiveIDs, HandTotal); 
-if (RLMODE == 1) 
+ChangeCheck(LactiveIDs, LpreviousActiveIDs, HandTotal); // A little broken(activates when it shouldnt, doesnt del old text properly), Check why NOTED 12/17/2025 // CHANGE change check so it just list hands as they activate and DEACTIVATE, IDK  FIX IT
+if (RLMODE == 1) //&& (LatestTick - PREVrecvLatestTick) < 10) // I created a Catched Up mechanism But Not I wont be needed, Will be able to backtest lightning fast tho, Or at whatever rate I set. // Oooh catchup mechanism for lag spikes, If errorCode ... no, any catching up will have to be done on the web API. its teh cleanest way
 { 
 if (RLMODE == 1)// Well need a stop to make sure its caught up the latest data so we dont insta buy on old data, It should run hella fast when catching up tho so may not matter, //GlobalPTick is exactly as its named, The tick value as given per the API / If its one behind aka on the latest one, Consider buying
 { 
@@ -3604,9 +3738,21 @@ if (LScore < SellPnt)
   //***//***//***//***//***//***//***//***//***//***//***//
 
 
+//LatestTick++; //  "LatestTick = GlobalPTick" makes the computational algorithms skip ahead to the latest price tick, LatestTick++; makes it catch up from all prior data, More data good, But Creates desync risk
+// DO this main loop, Its a render loop, 
+// UPON recieving the new price and volume 
+// info, Run the calculation. Then Switch 
+// back to the started render loop, Which checks 
+// for a new price and renders present shit
+//CURRENT goal, make it render animations whilst started,(completed, forgot when, doesnt matter)
+        
+         // IMPORTANT TO KNOW, the cycle rate of the renderer
 }   SDL_Delay(16);
    
 SDL_RenderPresent(renderer);  
+
+ // may be the wrong place for this bracket, Fixed a missing bracket error earlier,
+
 
 
 
@@ -3615,7 +3761,7 @@ SDL_RenderPresent(renderer);
     SDL_DestroySurface(gui);
     SDL_DestroySurface(StarPloint);
     SDL_DestroySurface(Text);
-    SDL_DestroySurface(BlueknobSurface); 
+    SDL_DestroySurface(BlueknobSurface); // Gotta update these
     SDL_DestroySurface(BlueknobSurface);
     SDL_DestroySurface(StartButtonSurface);
     SDL_DestroySurface(StopButtonSurface);
@@ -3627,8 +3773,8 @@ SDL_RenderPresent(renderer);
     SDL_DestroySurface(FocusWheelTwoSurface);   
     SDL_DestroySurface(FocusWheelThreeSurface);      
     SDL_DestroySurface(FocusWheelFourSurface);
-    SDL_DestroySurface(BookButtonSurface);  
-    SDL_DestroySurface(BookText);  
+    SDL_DestroySurface(BookButtonSurface);  // destroy all the images to fix memeory leak, dont forget that
+    SDL_DestroySurface(BookText);  //segfault here
     SDL_DestroySurface(bookSurface);
     SDL_DestroySurface(BookCoverSurface);
     SDL_DestroySurface(BookBasicSurface);
@@ -3664,7 +3810,8 @@ SDL_RenderPresent(renderer);
     SDL_DestroyTexture(BookTexture);  
     SDL_DestroyRenderer(Bookrenderer); // Destroy all those other textures here too for book
     SDL_DestroyWindow(BOOK);
-
+//book
+//closesocket(clientSocket);
    closesocket(serverSocket);
    WSACleanup();
 
@@ -3672,6 +3819,21 @@ SDL_RenderPresent(renderer);
 }
 }
 
+
+    // TO DO LIST
+    //FIx rect carry over in Book 
+    //Add pace scaler for buttons //Done
+    // Handlog, arc Struct getting from text. //Done
+    // image related memory leak //DOne
+    // Sound, Web api, Exit button not working in book and main
+    // Better animation for fogmap //Done
+    // Hand Rank Stamp //Done
+// Broker Function Complete, 
+// Text Read Function/Performence rating function, Get that jump started, Rip from the handlog read function
+// THEN SEND TO API FUNCTION
+// then cleanup steps, Let the hands activate them selves, we only have Hand 2 active right now
+
+//side note, Couple prices together over a span as a single val, see what kinda changes to the chart that makes
 
   
 
