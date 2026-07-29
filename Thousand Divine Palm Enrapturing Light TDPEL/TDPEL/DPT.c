@@ -3,13 +3,11 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>   
-#include <winsock2.h>
-#include <windows.h> // do I really need this I forgot why this is here.
+#include <winsock2.h> // Only windows only Lib
 #include <string.h>
 #include <stdarg.h>
 #include <sys/stat.h>
 #include <direct.h>
-#include <math.h>
 #pragma comment(lib, "ws2_32.lib")
 
 #define NOMINMAX
@@ -21,7 +19,7 @@
 #endif
 // SC stands for Sync Chart ITS PERCENT activation rate accross ALL relevant Hands, Buy or Sell
   // DEFAULT DEFINEMENT //
-#define HandTotal 1024
+#define HandTotal 24
 #define PricePlointcount  172
 #define PricePlointGap 3
 #define HSRPlointcount  40 // actually 1 less than input number, Because 0 is first number here
@@ -67,16 +65,16 @@ int RMaxWeight = 0;
 int RScore = 100.00;
 int RTotalActive = 0;
 int RTotalUnready; //needing more data to determine active state
-char RactiveIDs[HandTotal];
-char RpreviousActiveIDs[HandTotal];
+char RactiveIDs[HandTotal * 4];
+char RpreviousActiveIDs[HandTotal * 4];
 int LMaxWeight = 0;
 float LScore = 100.00;
 int LTotalActive = 0;
 int LTotalUnready; //needing more data to determine active state
-char LactiveIDs[HandTotal];
-char LpreviousActiveIDs[HandTotal];
-bool Buy = false;
-bool Sell = false;
+char LactiveIDs[HandTotal * 4];                                                                                                               // Before  After
+char LpreviousActiveIDs[HandTotal * 4]; // When all 1,000 are implemented, Have changecheck Make a Organized entire text file of the  list in a  #####  #####
+bool Buy = false;                                                                                                                         // #####  #####
+bool Sell = false;                                                                                                                        // #####  #####  style format, Before and AFter, Top to bottom
 bool newQuit = false;
 bool BookQuit = false;
 int lastHoveredId = -1;
@@ -2089,7 +2087,7 @@ if (PageStatus != 0){ //Press and hold button method I designed
     if (HoldTimer/100 <CycleCT)
     { CycleCT = 0;
 if (Page > 0) {if (PageStatus == 1) {Page--;}}
-if (Page < 1024) {if (PageStatus == 2) {Page++;}}
+if (Page < HandTotal) {if (PageStatus == 2) {Page++;}}
     }
     
 
@@ -3203,6 +3201,9 @@ strcpy(HandName.Text,Righthands[Page/2 -1]->Name);
 
 
 if ((Page % 2) > 0){
+    if (Page <= HandTotal)
+    {
+   
     
  PageState = Lefthands[((Page - 1) /2)]->PageType;
 strcpy(DescText.Text,Lefthands[((Page - 1) /2)]->Descriptor); // The FOg map can be hovered over in the book, Not through it, But even while they are not overlayed, fix
@@ -3230,18 +3231,15 @@ strcpy(HandName.Text,Lefthands[((Page - 1) /2)]->Name);
     } //printf("Rank %d\n", RanktoRender);
 }
 }
+}
 //message PageNumber;
 //message HandName;
 //message DescText;
 //message TrackRecord;
 
 
-if (PageState == 0){ // If Page state is ZERO that could be a homepage, It could be, I could make it so, Move em all up one, to its true sum   
-}
-
-if (PageState == 1)
-{
-    //message HandTypeArcsettings ORGANIZE IT, theres a better way, My method is right, Just decide what gets defined in the Right or LEft if statements above vs here, kinda duplicating;
+// If Page state is ZERO that could be a homepage, It could be, I could make it so, Move em all up one, to its true sum   
+ //message HandTypeArcsettings ORGANIZE IT, theres a better way, My method is right, Just decide what gets defined in the Right or LEft if statements above vs here, kinda duplicating;
 
     //Define the unique text layout and buttons layout
     //in the settings file OH MY FRICK, clutter the file or complexify its complexity, darn this data has to be pulled from a test file, In the typical Typetext to screen formate, a raw string passed into the fucntion as are all others, 
@@ -3250,7 +3248,7 @@ if (PageState == 1)
     // So lets do the ground work now and bring it home tmrw.
     //Need a Stats Message struct, a name one and one additional for type B pages that would go in the if Statement, and lastly one for the page Number, So FIVE total (page number, Name, Desc, Stats, type B settings text ),  conditional. 
     //Type A just has the right side of the book be blank
-}
+
 
 
 
@@ -3746,7 +3744,7 @@ for (int i = 0; i < 12; i++) {
     
 }
 BuyPnt = RMaxWeight / 100 * RPercentSelected;
-ChangeCheck(RactiveIDs, RpreviousActiveIDs, HandTotal);  // A little broken(activates when it shouldnt, doesnt del old text properly), Check why NOTED 12/17/2025
+ChangeCheck(RactiveIDs, RpreviousActiveIDs, HandTotal * 4);  // A little broken(activates when it shouldnt, doesnt del old text properly), Check why NOTED 12/17/2025
                                                         // And causes memory leak, will fix later, Noted 1/3/2026
 if (RLMODE == 0)//&& (LatestTick - PREVrecvLatestTick) < 10) // I created a Catched Up mechanism But Not I wont be needed, Will be able to backtest lightning fast tho, Or at whatever rate I set.
 { 
@@ -3819,7 +3817,7 @@ for (int i = 0; i < 12; i++) {
 }
 
 SellPnt = LMaxWeight / 100 * LPercentSelected;
-ChangeCheck(LactiveIDs, LpreviousActiveIDs, HandTotal); // A little broken(activates when it shouldnt, doesnt del old text properly), Check why NOTED 12/17/2025 // CHANGE change check so it just list hands as they activate and DEACTIVATE, IDK  FIX IT
+ChangeCheck(LactiveIDs, LpreviousActiveIDs, HandTotal * 4); // A little broken(activates when it shouldnt, doesnt del old text properly), Check why // CHANGE change check so it just list hands as they activate and DEACTIVATE, IDK  FIX IT
 if (RLMODE == 1) //&& (LatestTick - PREVrecvLatestTick) < 10) // I created a Catched Up mechanism But Not I wont be needed, Will be able to backtest lightning fast tho, Or at whatever rate I set. // Oooh catchup mechanism for lag spikes, If errorCode ... no, any catching up will have to be done on the web API. its teh cleanest way
 { 
 if (RLMODE == 1)// Well need a stop to make sure its caught up the latest data so we dont insta buy on old data, It should run hella fast when catching up tho so may not matter, //GlobalPTick is exactly as its named, The tick value as given per the API / If its one behind aka on the latest one, Consider buying
