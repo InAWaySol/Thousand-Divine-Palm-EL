@@ -9,7 +9,6 @@
 #include <sys/stat.h>
 #include <direct.h>
 #pragma comment(lib, "ws2_32.lib")
-
 #define NOMINMAX
 #ifndef MAX
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
@@ -20,7 +19,8 @@
 // SC stands for Sync Chart ITS PERCENT activation rate accross ALL relevant Hands, Buy or Sell
   // DEFAULT DEFINEMENT //
 #define HandTotal 24
-#define PricePlointcount  172
+#define PriceChartDisplayRange  172
+#define PriceChartMemMax  1000
 #define PricePlointGap 3
 #define HSRPlointcount  40 // actually 1 less than input number, Because 0 is first number here
 #define HSRPlointGap 22
@@ -33,9 +33,9 @@ double SlideRate = 3;
 int SlideMax = 1;
 double SlideMaxAdd = 0;
 int HSRPC = HSRPlointcount -1; // Deprecate this mes right here
-int PricePC = PricePlointcount; // Deprecate this mes right here
 int SRChartUpdatelog = 0;
 int PriceChartUpdatelog = 0;
+int PriceChartSTARTINGPOINT = 0;
 int SRChartTempVal = 0;
 int TradeCount = 0;
 double PriceChartTempVal = 0;
@@ -325,8 +325,8 @@ typedef struct {
 
 Ploint SyncRateChart[HSRPlointcount];
 Ploint ActivationPercentageGauge[2];
-Ploint PriceChart[PricePlointcount];
-
+Ploint PriceChart[PriceChartMemMax];
+SDL_FRect PriceChartScrollButton = {394,3,520,520};
 typedef struct  
 {
  char Name[12];
@@ -1108,23 +1108,23 @@ void UpdatePriceChart(double value) {
     //printf("%d ", PriceChartUpdatelog);
         
         PriceChartTempVal = value;
-        PriceChartUpdatelog = PricePlointcount;
+        PriceChartUpdatelog = PriceChartMemMax;
         LowestPrice = 100000000000000; // if we even encounter a price over a trillion, this breaks, that does happen its just rare
         HighestPrice = 0;
-        for (size_t i = 0; i < PricePlointcount-1; i++)
+        for (int i = 0; i < PriceChartMemMax; i++)
         {
                 PriceChart[i].price = PriceChart[i+1].price;
         }
-        PriceChart[PricePlointcount -1].price = PriceChartTempVal;
+        PriceChart[PriceChartMemMax].price = PriceChartTempVal;
 
     
 
-if (PriceChartUpdatelog <= PricePlointcount)
+if (PriceChartUpdatelog <= PriceChartMemMax)
 {
  PriceChart[PriceChartUpdatelog].price = value;
 }
 
-for (int p = 0; p < PricePlointcount; p++){
+for (int p = 0; p < PriceChartMemMax; p++){
 if (PriceChart[p].price > HighestPrice) {
 HighestPrice = PriceChart[p].price;
 }
@@ -1142,7 +1142,7 @@ if (PriceChart[p].price < LowestPrice) {
 }
 
 
-for (int p = 0; p < PricePlointcount; p++){
+for (int p = 0; p < PriceChartMemMax; p++){
 double PeakVariance = (HighestPrice - LowestPrice);
 //printf(" Peak Variance Highest %.2lf  Lowest %.2lf\n", HighestPrice, LowestPrice); 
 double RelativePricing = (100/PeakVariance) * (PriceChart[p].price - LowestPrice);
@@ -1866,10 +1866,34 @@ Uint32 winID = SDL_GetWindowID(win);
             }
         }
     }
-      
-//printf("Event ID: %u | Main ID: %u\n", interact.motion.windowID, winID);
+    int x = interact.button.x;
+    int y = interact.button.y;
+
+   if (interact.type == SDL_EVENT_MOUSE_WHEEL)
+    {
+         if (interact.wheel.y > 0 && PriceChartSTARTINGPOINT < PriceChartMemMax)
+    {
+        PriceChartSTARTINGPOINT+= 5;
+    }
+    else if (interact.wheel.y < 0 && PriceChartSTARTINGPOINT > 0)
+    {
+       PriceChartSTARTINGPOINT-= 5;
+    }
+        printf("Wheel: x=%f y=%f\n", interact.wheel.x, interact.wheel.y);
+    }
+if (interact.type == SDL_EVENT_MOUSE_WHEEL) {
+  if (x >= PriceChartScrollButton.x && x <= (PriceChartScrollButton.x + PriceChartScrollButton.w) &&
+    y >= PriceChartScrollButton.y && y <= (PriceChartScrollButton.y + PriceChartScrollButton.h))  {
+        
+  
+ 
+} 
+}
 
                 if (interact.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+
+
+
                     if (interact.button.button == SDL_BUTTON_LEFT) {
                         SDL_FPoint mousePoint = { interact.button.x, interact.button.y };
                         if (SDL_PointInRectFloat(&mousePoint, &BlueSliderKnob)) {
@@ -1911,8 +1935,6 @@ Uint32 winID = SDL_GetWindowID(win);
                        // SDL_Delay(50);
                     }
                 } 
-    int x = interact.button.x;
-    int y = interact.button.y;
 
     if (interact.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
    
@@ -2167,6 +2189,15 @@ for (int f = 0; f < (sizeof(*RelativeLocationA)/2); f++)
         Seed->Times[h] = 0;
     }
 }
+
+for (int qq = 0; qq < PriceChartMemMax; qq++)
+{
+    PriceChart[qq].location.x = 395; // Could make a Smooth transition function, Sends off the price its supposed to be, The value itself,  Increment it in that direction once every tick // Would need a dynamic Global static value tho, mandatory Direct Memory control Unless we Do it in the body of the app, and use a Sequencer
+            PriceChart[qq].location.w = 1 ; 
+            PriceChart[qq].location.y = 518;
+            PriceChart[qq].location.y = 40;
+}
+
 
 SlideMax = SlidingTextXVal / SlideRate;
 createDumpFiles();
@@ -2910,7 +2941,7 @@ Hand* Lefthands[12] = {&I, &III, &V, &VII, &IX, &XI,&XIII, &XV,  &XVII,  &XIX, &
 SDL_FRect FireDestRect;
 SDL_FRect FireSrcRect;
 
-float placeholder  = RLMODE ? .2 * ((100/ (sizeof(Righthands)/8)) * RTotalActive): .2 * ((100/ (sizeof(Lefthands)/8)) * LTotalActive);
+float placeholder  = RLMODE ? .2 * ((100/ (sizeof(Righthands)/4)) * RTotalActive): .2 * ((100/ (sizeof(Lefthands)/4)) * LTotalActive);
 if (placeholder > 21){ placeholder = 21;};
 
           for (int i = 0; i < placeholder; i++) {
@@ -3099,16 +3130,16 @@ for (int d = 0; d < strlen(GUITextBox[7].Text); d++)
             i++;
         }
      
-            for (size_t j = 0; j < PricePlointcount;) {
-          
-            PriceChart[j].location.x = 395 + PricePlointGap * j; // Could make a Smooth transition function, Sends off the price its supposed to be, The value itself,  Increment it in that direction once every tick // Would need a dynamic Global static value tho, mandatory Direct Memory control Unless we Do it in the body of the app, and use a Sequencer
-            PriceChart[j].location.w = 1 ;
+            for (int j = (PriceChartMemMax - PriceChartSTARTINGPOINT) - PriceChartDisplayRange  ; j <  PriceChartMemMax - PriceChartSTARTINGPOINT;  j++) { 
+           
+            PriceChart[j].location.x = 910 + PricePlointGap * (j - (PriceChartMemMax - PriceChartSTARTINGPOINT)); // Could make a Smooth transition function, Sends off the price its supposed to be, The value itself,  Increment it in that direction once every tick // Would need a dynamic Global static value tho, mandatory Direct Memory control Unless we Do it in the body of the app, and use a Sequencer
+            PriceChart[j].location.w = 1 ; 
             PriceChart[j].location.y = 518;  // Add a Smooth transition On this // and In a later version the ability to scrolll, Starting Line as a distance From the latest, Scroll back and U are 1 line from the latest, So you view all the latest data but 1 line behind, ! line as in How many pixels are u from base line
             SDL_SetRenderDrawColor(renderer,255,255, 255, 185); // That can be subtracted from to equal A full line of data, So if the line draw is 2 pixels wide, with 1 seperator pixel, Ever 3 pixels is 1 line away, so that chart displayed is Latest Data - lets say -189, So show the data stored, Up until -189,and if the total width of the viewport is 400
             SDL_RenderFillRect(renderer, &PriceChart[j].location); // Then thats Its to display FROM LATEST POSITION -(189 +400) and onward
-              j++;
-             }   
              
+             }   
+            // printf("Break\n");
             // PriceChart[0].location.h = 0; //This is a manal fix for a visal bvg
             // Fix the first line not updating, and also code in the height shi, Use hte raw price, Divide the 
             // Price by the previous price, 1.000, if less than 1, Then place it the different below the previous
