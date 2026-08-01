@@ -710,65 +710,60 @@ RuleOfThreeParts Six;
 
 RuleOfThreeParts* RuleOfThreeBinder[4] = {&One, &Four, &Five, &Six};
 
+
+
 void RuleOfThree( Hand* HandID,RuleOfThreeParts* ROfTHand){ // MUST be initialized NextTick to CHeck is 0, Tick vals are 0 through count to three, Magnitude default 1, First point default NOT FOUDN, starts at tick 0
     
-       for (int i = 0; i < 3; i++)
-       { 
-        if (ROfTHand->NextTickToCheck + ROfTHand->Magnitude  < AlgoTick && HandID->Activation == false) // If i have them re -search will need more math to source a new working starting tick
+      
+        if (ROfTHand->NextTickToCheck + ROfTHand->Magnitude  < AlgoTick) // If i have them re -search will need more math to source a new working starting tick
     { 
-        double price = 0;
-         if (ROfTHand->CountToThree[i].Found == true)
-         {ROfTHand->NextTickToCheck = ROfTHand->CountToThree[i].Tick + ROfTHand->Magnitude;
-        continue;
-    (" Continue %s\n", HandID->ID);}
-
+       if (HandID->Activation == false)
+       {
+      
+          for (int i = 0; i < 3; i++)
+            {  double price = 0;
          if (ROfTHand->CountToThree[i].Found == false)
          { //printf(" SEARCHING Check %s\n", HandID->ID);
            for (int k = 0; k < ROfTHand->Magnitude; k++)
            {
             price = GetPriceAtTick(ROfTHand->NextTickToCheck + k); // If 0 gets the first line 1 gets the seconds
             ROfTHand->CountToThree[i].price = ((ROfTHand->CountToThree[i].price * k) + price) / (k + 1); // Should work, if not remove parantehses on K + 1
-
            }
-           if (i == 0)
-           { printf(" First Point found %s\n", HandID->ID);
-           ROfTHand->CountToThree[i].Found = true;
-           ROfTHand->CountToThree[i].Tick = ROfTHand->NextTickToCheck;
-           }
-           if ( i != 0)
-           {
+         
              if ( ROfTHand->CountToThree[i].price > ROfTHand->CountToThree[i-1].price )
            { 
-             ROfTHand->CountToThree[i].Found = true;
+            ROfTHand->CountToThree[i].Found = true;
             ROfTHand->CountToThree[i].Tick = ROfTHand->NextTickToCheck;
+            ROfTHand->NextTickToCheck = ROfTHand->CountToThree[i].Tick + ROfTHand->Magnitude;
+              printf("Point %d Found for %s  AT Tick %d\n",i, HandID->ID,ROfTHand->CountToThree[i].Tick );
            }
+
            if (ROfTHand->CountToThree[i].price < ROfTHand->CountToThree[i-1].price)
-           { printf(" Trying again %s  %d\n", HandID->ID, i);
-  // should only ever be el se If its the second or third Count,
-           //Price is ALWAYS gonna be more than 0
+           { 
+           printf(" Trying again %s  %d\n", HandID->ID, i);
            for (int b = 0; b < 3; b++)
-       {  ROfTHand->CountToThree[b].Found = false;}
-        // ROfTHand->NextTickToCheck = ; // stays the same
-           }
+           {ROfTHand->CountToThree[b].Found = false;}
            }
            
-          
-         
          }
+
+
+
          
          if (ROfTHand->CountToThree[1].Found == true)
-         { printf(" RO3 hand FOund %s\n", HandID->ID);
+         { //printf("Rule Of Three Hand %s Found at Tick: %d \n", HandID->ID,ROfTHand->CountToThree[i].Tick );
            HandID->Activation = true;
            HandID->ActivationRate = 100;
          }
+
+         if (ROfTHand->CountToThree[2].Found == true)
+         { // Add to track record that it was accurate 
+        }
          // Can later add a continuation PURELY for data collection reasons, If the third is found as expcted, ! point to its accuracy on the track record,
          
        }
     }
-       return;
-    
-    
-    
+}
 
 }
 
@@ -1106,33 +1101,32 @@ void UpdateSRChart(int value) {
 void UpdatePriceChart(double value) {
     
     //printf("%d ", PriceChartUpdatelog);
-        
+        if (value != 0) // If the value is NOT PURE 0 which crypto or stocks never is, else just update the chart relativity
+{
         PriceChartTempVal = value;
         PriceChartUpdatelog = PriceChartMemMax;
         LowestPrice = 100000000000000; // if we even encounter a price over a trillion, this breaks, that does happen its just rare
         HighestPrice = 0;
-        for (int i = 0; i < PriceChartMemMax; i++)
+        for (int i = 0; i < 1000; i++)
         {
                 PriceChart[i].price = PriceChart[i+1].price;
+                printf(" Highest  %d\n ",i);
         }
-        PriceChart[PriceChartMemMax].price = PriceChartTempVal;
+        PriceChart[PriceChartMemMax-1].price = PriceChartTempVal;
+//printf(" Highest PRrice AFTER %.6lf and ChartPrice %lf %d\n ", value, PriceChart[PriceChartMemMax].price, PriceChartTempVal);
 
-    
-
-if (PriceChartUpdatelog <= PriceChartMemMax)
-{
- PriceChart[PriceChartUpdatelog].price = value;
 }
-
-for (int p = 0; p < PriceChartMemMax; p++){
+//printf(" Highest PRrice AFTER %.6lf and ChartPrice %lf %d\n ", value, PriceChart[PriceChartUpdatelog].price, PriceChartUpdatelog );
+for (int p = (PriceChartMemMax - PriceChartSTARTINGPOINT) - PriceChartDisplayRange; p <  PriceChartMemMax - PriceChartSTARTINGPOINT;  p++){
 if (PriceChart[p].price > HighestPrice) {
+    
 HighestPrice = PriceChart[p].price;
 }
 
 if (PriceChart[p].price < LowestPrice) {
     if (PriceChart[p].price==0)
     {
-        PriceChart[p].price = 0; // Cant have it be NULL, so let it sit in the middle until we get real data for it, Cosmetic effect
+        PriceChart[p].price = 0; // NO NULL available so 0 is my placeholder val, But 0 is by far the lowest val, So we have to ignore
     }
     else{
     LowestPrice = PriceChart[p].price;
@@ -1141,19 +1135,21 @@ if (PriceChart[p].price < LowestPrice) {
 }
 }
 
-
-for (int p = 0; p < PriceChartMemMax; p++){
+for (int p = (PriceChartMemMax - PriceChartSTARTINGPOINT) - PriceChartDisplayRange; p <  PriceChartMemMax - PriceChartSTARTINGPOINT;  p++) {
 double PeakVariance = (HighestPrice - LowestPrice);
 //printf(" Peak Variance Highest %.2lf  Lowest %.2lf\n", HighestPrice, LowestPrice); 
 double RelativePricing = (100/PeakVariance) * (PriceChart[p].price - LowestPrice);
 PriceChart[p].height = (3.33 * ((100/PeakVariance) * (PriceChart[p].price - LowestPrice))); // Current price minus lowest price As a percentage of Peak Variance, Multiply that by 3.33 100% aka it is the highest price 333 pixels tall
 if (PriceChart[p].price == 0){ PriceChart[p].height = (3.33 * 0);};
-
+//printf(" Price.h %.3lf\n",PriceChart[p].height);
 //printf(" Peak Variance %.6lf\n", PeakVariance); // BEFORE all the data is fulled the NUll read prices make the chart midline heavy, Not really something that needs fixing, Ill leave it as a way to remind myself, For cosmetic reasons it should be, But I wont, It displays correctly
 PriceChart[p].location.h =  -(PriceChart[p].height + 44); // The reason the height changes is because at the start theres 0 vals in the chart, Which makes all numbers that do come in relative to zero near the highest val. The code is perfect
 
 }
-PriceChartUpdatelog++;
+if (value != 0)
+{ 
+  PriceChartUpdatelog++;
+}
 }
 
 void SimulatePriceChange(double *pez)
@@ -3139,11 +3135,6 @@ for (int d = 0; d < strlen(GUITextBox[7].Text); d++)
             SDL_RenderFillRect(renderer, &PriceChart[j].location); // Then thats Its to display FROM LATEST POSITION -(189 +400) and onward
              
              }   
-            // printf("Break\n");
-            // PriceChart[0].location.h = 0; //This is a manal fix for a visal bvg
-            // Fix the first line not updating, and also code in the height shi, Use hte raw price, Divide the 
-            // Price by the previous price, 1.000, if less than 1, Then place it the different below the previous
-            // if more than 1, Thant the difference Up Above
             
 
             SDL_RenderTexture(renderer, Blueknobtexture, NULL, &BlueSliderKnob);
@@ -3655,7 +3646,7 @@ appendToFile("PerformenceLog.txt",PerformenceSheetFormat); // just adds it to wh
         
 if (Simul == true)
 {
-   if (currentTime - lastTime >= 333) {  // Just delete thi whol ebracketed segment when your done testing
+   if (currentTime - lastTime >= 111) {  // Just delete thi whol ebracketed segment when your done testing
 SimulatePriceChange(&GlobalPrice);
  UpdatePriceChart(GlobalPrice);
          char BufferGPrice[10] = "";
@@ -3667,13 +3658,13 @@ lastTime = currentTime;
 }
 }
 
-
+UpdatePriceChart(0); // PURELY to update the chart more often,
 
  if (loopActive == true && AlgoTick < LatestTick) { // Just for back and forth check purposes, So it updates when a new arrives, No sooner, and no other time, GlobalPtick is useless beyond that, 
             //Just Latest, And Algo, The Latest we have and the the Part the ALgorithms are currently Caught up to 
-AlgoTick++; //basic Number Others are Logistical Truthes directly coordinated with the price data coming in,
-
-UpdateSRChart(Climax); 
+ //basic Number Others are Logistical Truthes directly coordinated with the price data coming in,
+  AlgoTick++;
+UpdateSRChart(Climax); //Chagne to Update on Change later
 Climax = RLMODE ?   PercenttoBuy : PercenttoSell;
 BrokerADeal(); // always called always looking for a trade when its getting data.
  //printf("Calculating..\r");
@@ -3879,7 +3870,7 @@ if (LScore < SellPnt)
 // back to the started render loop, Which checks 
 // for a new price and renders present shit
 //CURRENT goal, make it render animations whilst started,(completed, forgot when, doesnt matter)
-        
+      
          // IMPORTANT TO KNOW, the cycle rate of the renderer
 }   SDL_Delay(16);
    
