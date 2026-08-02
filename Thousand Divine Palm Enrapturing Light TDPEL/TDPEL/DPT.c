@@ -91,6 +91,9 @@ bool ReddraggingSlider = false;
 bool wateranimationComplete = false;
 int wateranimationframe = 0;
 int WaterClockSpeed = 0;
+int flicker = 0;
+int flickerRate = 15;
+bool Toggle = true;
 int Page = 0;
 int PageStatus = 0; // its for the button
 int PageState;
@@ -327,6 +330,7 @@ Ploint SyncRateChart[HSRPlointcount];
 Ploint ActivationPercentageGauge[2];
 Ploint PriceChart[PriceChartMemMax];
 SDL_FRect PriceChartScrollButton = {394,3,520,520};
+SDL_FRect PriceChartScrollsTATus = {890,33,20,20};
 typedef struct  
 {
  char Name[12];
@@ -715,13 +719,13 @@ RuleOfThreeParts* RuleOfThreeBinder[4] = {&One, &Four, &Five, &Six};
 void RuleOfThree( Hand* HandID,RuleOfThreeParts* ROfTHand){ // MUST be initialized NextTick to CHeck is 0, Tick vals are 0 through count to three, Magnitude default 1, First point default NOT FOUDN, starts at tick 0
     
       
+          for (int i = 0; i < 3; i++)
+            {
         if (ROfTHand->NextTickToCheck + ROfTHand->Magnitude  < AlgoTick) // If i have them re -search will need more math to source a new working starting tick
     { 
        if (HandID->Activation == false)
        {
-      
-          for (int i = 0; i < 3; i++)
-            {  double price = 0;
+        double price = 0;
          if (ROfTHand->CountToThree[i].Found == false)
          { //printf(" SEARCHING Check %s\n", HandID->ID);
            for (int k = 0; k < ROfTHand->Magnitude; k++)
@@ -1110,7 +1114,7 @@ void UpdatePriceChart(double value) {
         for (int i = 0; i < 1000; i++)
         {
                 PriceChart[i].price = PriceChart[i+1].price;
-                printf(" Highest  %d\n ",i);
+                //printf(" Highest  %d\n ",i);
         }
         PriceChart[PriceChartMemMax-1].price = PriceChartTempVal;
 //printf(" Highest PRrice AFTER %.6lf and ChartPrice %lf %d\n ", value, PriceChart[PriceChartMemMax].price, PriceChartTempVal);
@@ -1562,7 +1566,7 @@ else{
 
 
 bool DoIt = false;
-bool InitiateTimer = true;
+bool InitiateTimer = false;
 
 void BrokerADeal(){ // gets called NON STOP, always checkign for a trade
 
@@ -1763,7 +1767,8 @@ SDL_Renderer *renderer = SDL_CreateRenderer(win, NULL);
 //75 pixels available for hand count activation chart, 9 pixel margin top and bottom
 SDL_Surface *gui = SDL_LoadBMP("images/gui.bmp");
 SDL_Surface *StarPloint = SDL_LoadBMP("images/PlointStar.bmp");
-SDL_Surface *Text = SDL_LoadBMP("images/Text.bmp");
+SDL_Surface *Text = SDL_LoadBMP("images/Text.bmp"); 
+SDL_Surface* PriceChartNotifArrowSurface = SDL_LoadBMP("images/PriceChartNotifArrow.bmp");
 SDL_Surface* BlueknobSurface = SDL_LoadBMP("images/BlueSlider.bmp");
 SDL_Surface* RedknobSurface  = SDL_LoadBMP("images/RedSlider.bmp");
 SDL_Surface* StartButtonSurface  = SDL_LoadBMP("images/StartButton.bmp");
@@ -1782,6 +1787,7 @@ SDL_Surface* BookButtonSurface = SDL_LoadBMP("images/BookButton.bmp");
 SDL_Texture *guitexture = SDL_CreateTextureFromSurface(renderer, gui);
 SDL_Texture *StarPlointTexture = SDL_CreateTextureFromSurface(renderer, StarPloint);
 SDL_Texture *TextTexture = SDL_CreateTextureFromSurface(renderer, Text);
+SDL_Texture *PriceChartNotifArrowtexture = SDL_CreateTextureFromSurface(renderer, PriceChartNotifArrowSurface);
 SDL_Texture *Blueknobtexture = SDL_CreateTextureFromSurface(renderer, BlueknobSurface);
 SDL_Texture *RedknobtTexture = SDL_CreateTextureFromSurface(renderer, RedknobSurface);
 SDL_Texture *StartButtonTexture = SDL_CreateTextureFromSurface(renderer, StartButtonSurface);
@@ -2558,7 +2564,7 @@ WaterClockSpeed = 0;
 Hand I;
 I.IDNUM = 1;
 strcpy(I.ID, "I");
-strcpy(I.Name, "Special Slot!");
+strcpy(I.Name, "Rule Of Three!");
 strcpy(I.Descriptor, "The First Hand*Not Sure what Algorithm*Im putting here yet!");
 I.PageType = 1;
 I.Weight = SRank;
@@ -2588,7 +2594,7 @@ CopyBoosts(&II.virt, &BoostDefault); // gotta copy this over to all hands
 Hand III;
 III.IDNUM = 3;
 strcpy(III.ID, "III");
-strcpy(III.Name, "Lancers Step!");
+strcpy(III.Name, "Sell Sword!");
 strcpy(III.Descriptor, "RANDOM!");
 III.PageType = 2;
 III.Weight = SRank;
@@ -2603,7 +2609,7 @@ CopyBoosts(&III.virt, &BoostDefault); // gotta copy this over to all hands
 Hand IV;
 IV.IDNUM = 4;
 strcpy(IV.ID, "IV");
-strcpy(IV.Name, "Fire Four!");
+strcpy(IV.Name, "Rule Of Thiry!");
 strcpy(IV.Descriptor, "RANDOM!");
 IV.PageType = 1;
 IV.Weight = SRank;
@@ -2618,7 +2624,7 @@ CopyBoosts(&IV.virt, &BoostDefault); // gotta copy this over to all hands
 Hand V;
 V.IDNUM = 5;
 strcpy(V.ID, "V");
-strcpy(V.Name, "Leos Pride !");
+strcpy(V.Name, "Rule Of Three Hundred!");
 strcpy(V.Descriptor, "RANDOM!");
 V.PageType = 1;
 V.Weight = SRank;
@@ -2633,7 +2639,7 @@ CopyBoosts(&V.virt, &BoostDefault); // gotta copy this over to all hands
 Hand VI;
 VI.IDNUM = 6;
 strcpy(VI.ID, "VI");
-strcpy(VI.Name, "Dawns Horizon!");
+strcpy(VI.Name, "Rule of Three Thousand!");
 strcpy(VI.Descriptor, "RANDOM!");
 VI.PageType = 1;
 VI.Weight = SRank;
@@ -3067,7 +3073,7 @@ for (int d = 0; d < strlen(GUITextBox[4].Text); d++)
 }
 
 
-char Climaxbuffer[100] = "Climax %"; 
+char Climaxbuffer[100] = "Climax %%"; 
 char Cbuffer[100];
 snprintf(Cbuffer, sizeof(Cbuffer), "%.2f", Climax);
 strcat(Climaxbuffer,Cbuffer);
@@ -3135,6 +3141,20 @@ for (int d = 0; d < strlen(GUITextBox[7].Text); d++)
             SDL_RenderFillRect(renderer, &PriceChart[j].location); // Then thats Its to display FROM LATEST POSITION -(189 +400) and onward
              
              }   
+             
+             if (PriceChartSTARTINGPOINT > 0)
+             { flicker++;
+                if ( flicker % flickerRate == 0)
+                {
+                 Toggle = !Toggle;
+                  flicker = 0;
+                }
+                if (Toggle == true)
+                {
+                     SDL_RenderTexture(renderer, PriceChartNotifArrowtexture, NULL, &PriceChartScrollsTATus);
+                }
+             }
+             
             
 
             SDL_RenderTexture(renderer, Blueknobtexture, NULL, &BlueSliderKnob);
@@ -3526,12 +3546,16 @@ SDL_RenderPresent(Bookrenderer);
 
     if (DoIt == true)
     {
-//ToastNotification("Transmission in Time 1!", 0);
 
+   
         if (InitiateTimer == false)
         { // IF String recieved(and sent back to us as confirmation) == Current To be sent, Set all vals to 0, and set message as recieved.
            TimeOfActivation = currentTime; //cant afford to corrupt The Time towait val, so it remains seperate
            InitiateTimer = true;
+                char TransmitBuf[100] = "";
+        snprintf(TransmitBuf, sizeof(TransmitBuf),"Transmission in %dms!",TimeToWait);
+ToastNotification(TransmitBuf,  TimeToWait);
+strcpy(TransmitBuf,"");
         }
         
         
@@ -3543,13 +3567,14 @@ SDL_RenderPresent(Bookrenderer);
 //ToastNotification("Transmission in Time 2!", 0);
           if (currentTime >= LastTimeThirty + 30000){// 30,000 is supposed to be 30 seconds
    
-           ToastNotification("Transmission !", 0);
+           ToastNotification("TRANSMITTING!", 0);
             LastTimeThirty = currentTime;
             TransmissionCT++;
             
              //printf("Preparing the Data\n"); // Bogus claim but sounds positive to the user
-
- if (RLMODE == 0)
+if (Simul == false)
+{
+    if (RLMODE == 0)
     {
         BoughtPrice = GlobalPrice;
         if (IsMessageRecieved == 0)
@@ -3619,7 +3644,7 @@ appendToFile("PerformenceLog.txt",PerformenceSheetFormat); // just adds it to wh
         
 
     }
-            ToastNotification("Transmitting!", 0);
+          
             if (TransmissionCT == 5) // tries to send it 5 times, if all attempts fail, check if Buy is still true, then try again,
             {
              //Stop transmitting and Check if Buy is still True RESET
@@ -3630,11 +3655,54 @@ appendToFile("PerformenceLog.txt",PerformenceSheetFormat); // just adds it to wh
              DoIt = false; // will make it question if buy is still active, If the trade is still viable before it repeats, Bypassing the wait time Until the message is recieve, No timeouts, 
              // merely resetting Initiate timer would reset the timer, just a reminder incase i come back to this long after for whatever reason.
             }
+}
+
+if (Simul == true)
+{
+   RLMODE = !RLMODE;
+
+    if (BoughtPrice != 0 && SoldPrice != 0)
+        {
+            // Log Both to the text file PerformenceLog + the time and TimeTowait Val
+        // - - - ## WORK STILL TO BE DONE, THE FILE LOGGING ## - - - //
+        // Style:  PercentChange_TimeStamp_TimeToWait // just those 3 things
+
+        
+float PercentChange = 0;
+        if (BoughtPrice >= SoldPrice)
+        {
+           PercentChange = -((BoughtPrice / 100) * (BoughtPrice - SoldPrice));
+        }
+        if (BoughtPrice < SoldPrice)
+        {
+            PercentChange = ((SoldPrice / 100) * (SoldPrice - BoughtPrice)); // hasnt been tested but no reason it shouldnt work.
+        }
+
+char PerformenceBuffer[100] = "";
+char PerformenceSheetFormat[100] = "";
+
+time_t now = time(NULL);
+struct tm *t = localtime(&now);
+char timestamp[64];
+strftime(timestamp, sizeof(timestamp), "[%Y-%m-%d %H:%M:%S]", t);
+snprintf(PerformenceBuffer, sizeof(PerformenceBuffer),"%.3f %s %d ", PercentChange, timestamp, TimeToWait);
+strcat(PerformenceSheetFormat,PerformenceBuffer);
+strcpy(PerformenceBuffer,"");
+TradeCount++; // Unused atm
+appendToFile("PerformenceLog.txt",PerformenceSheetFormat); // just adds it to whatever free slot is left, We can keep the val of read values thus far and never have to empty the text file
+        BoughtPrice = 0; 
+        SoldPrice = 0;
+        DoIt = false;
+        InitiateTimer = false;
+        } 
+}
+
+
        
        }
-        }
-          
     }
+          
+}
     
 
 
@@ -3665,7 +3733,7 @@ UpdatePriceChart(0); // PURELY to update the chart more often,
  //basic Number Others are Logistical Truthes directly coordinated with the price data coming in,
   AlgoTick++;
 UpdateSRChart(Climax); //Chagne to Update on Change later
-Climax = RLMODE ?   PercenttoBuy : PercenttoSell;
+Climax = RLMODE ?   PercenttoSell : PercenttoBuy ;
 BrokerADeal(); // always called always looking for a trade when its getting data.
  //printf("Calculating..\r");
 //printf("Calculating..\n");
@@ -3772,7 +3840,7 @@ if (RLMODE == 0)//&& (LatestTick - PREVrecvLatestTick) < 10) // I created a Catc
 { 
 if (RScore > BuyPnt)
 {Buy = true; //Buy, the bool that determines if the app buys or not
- printf("Buy Option Armed\n");
+ printf("Buying\r");
 }
 if (RScore < BuyPnt)
 {
@@ -3846,7 +3914,7 @@ if (RLMODE == 1)// Well need a stop to make sure its caught up the latest data s
 { 
  if (LScore > SellPnt)
 {Sell = true; //Buy, the bool that determines if the app buys or not
- //printf("Sell Option Ready\n");
+ printf("Selling\r");
 }
 if (LScore < SellPnt)
 {
