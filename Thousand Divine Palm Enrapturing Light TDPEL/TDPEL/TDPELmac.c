@@ -281,9 +281,7 @@ void ChangeCheck(char *current, char *previous, size_t bufferSize) {
     if (strcmp(current, previous) != 0) {
         appendToFile("HandLog.txt", 
                      "Active IDs changed from %.*s to %.*s",previous,current);
-
-        printf("Active IDs changed from %.*s to %.*s\n", previous,current);
-
+printf("Active IDs changed from %.*s to %.*s\n", previous, current);
         strncpy(previous, current, bufferSize);
     }
     
@@ -297,8 +295,8 @@ void SaveFiles(const char *files[4]) {
     strftime(timestamp, sizeof(timestamp), "%Y%m%d_%H%M%S", t);
 
     // Create folder named after timestamp
-    if (mkdir(timestamp) != 0) {
-        perror("mkdir failed");
+    if (mkdir(&timestamp) != 0) {
+       // perror("mkdir failed");
         return;
     }
 
@@ -1086,11 +1084,11 @@ void UpdateSRChart(int value) {
             SyncRateChart[SRChartUpdatelog].height = value;
            // printf("YEAH%d\n", value);
            // printf("i val%d\n",SRChartUpdatelog);
-            SRChartUpdatelog = SRChartUpdatelog + 1; }
+            SRChartUpdatelog += 1; }
     else{ SRChartUpdatelog = SRChartUpdatelog - 1;
          SRChartTempVal = SyncRateChart[SRChartUpdatelog].height;
         SyncRateChart[SRChartUpdatelog].height = value;
-          for (SRChartUpdatelog; SRChartUpdatelog >= 0;){
+          for (int g = SRChartUpdatelog; SRChartUpdatelog >= 0;){
         SyncRateChart[SRChartUpdatelog].height = SRChartTempVal;
       //  printf(" RESET Number: %d", SRChartUpdatelog);
          SRChartUpdatelog--; }
