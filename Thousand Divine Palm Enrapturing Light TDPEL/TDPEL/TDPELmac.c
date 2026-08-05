@@ -1937,7 +1937,7 @@ if (PriceSpreadf < 95) {if (PriceSpreadStatus == 2) {PriceSpreadf++;}}
 SDL_RenderTexture(renderer, guitexture, NULL, NULL);
 if (runonce < 1)
 {
-loopActive == false;
+//loopActive = false;
 
 
 for (int d = 0; d < 4; d++)
@@ -2103,7 +2103,7 @@ if (wateranimationframe == 5)
 };
 printf("Clearing Animation\n");
 memcpy(WaterAnimation, PatternFour, sizeof(WaterAnimation));
-wateranimationComplete = wateranimationComplete = true;
+wateranimationComplete = true;
 }  
 
 if (wateranimationframe == 4){ 
@@ -2126,7 +2126,7 @@ if (wateranimationframe == 4){
 70,78,70,55,40,25,15,8,8,15,25,40,55,70,78,70
   
 };  
-wateranimationframe = wateranimationframe + 1;
+wateranimationframe += 1;
 //printf("Frame Animation %d\n", wateranimationframe);
 memcpy(WaterAnimation, PatternFive, sizeof(WaterAnimation));
 }   
@@ -2152,7 +2152,7 @@ if (wateranimationframe == 3){
 
 
 };
-wateranimationframe = wateranimationframe + 1;
+wateranimationframe += 1;
 //printf("Frame Animation %d\n", wateranimationframe);
 memcpy(WaterAnimation, PatternFour, sizeof(WaterAnimation));
 }   
@@ -2176,7 +2176,7 @@ if (wateranimationframe == 2){
 95,85,65,45,28,17,10,6,6,10,17,28,45,65,85,95,
 100,95,80,55,35,22,14,9,9,14,22,35,55,80,95,100
 };
-wateranimationframe = wateranimationframe + 1;
+wateranimationframe += 1;
 //printf("Frame Animation %d\n", wateranimationframe);
 memcpy(WaterAnimation, PatternThree, sizeof(WaterAnimation));
 }   
@@ -2289,7 +2289,6 @@ WaterClockSpeed = 0;
     if(pF == NULL)
     {
        perror("fopen");
-       printf("Error: %s\n", strerror(errno));
     }
     for (int i = 0; i < sizeof(settings)/sizeof(settings[0]); i++) { 
             fgets(setting, sizeof(setting), pF);
@@ -2901,7 +2900,7 @@ for (int d = 0; d < strlen(GUITextBox[6].Text); d++)
 
 
 char Hanbuffer[100]; // I realize Now I could just use one buffer and clean it before every new use, But uhh, Next project Ill do that, Id likely learn something else before completing this one and be stuck here forever, Perfecting whats already done.
-snprintf(Hanbuffer, sizeof(Hanbuffer),"%d             %d", RTotalActive + LTotalActive, (sizeof(Lefthands) + sizeof(Righthands)) /8); 
+snprintf(Hanbuffer, sizeof(Hanbuffer),"%lld             %lld", RTotalActive + LTotalActive, (sizeof(Lefthands) + sizeof(Righthands)) /8); 
 strcat(Hanbuffer, "!");
 strcpy(GUITextBox[7].Text, Hanbuffer); 
 strcpy(Hanbuffer, "");  // String cat was just repeating endlessly, Forgot to rinse the buffer, Is good now.
