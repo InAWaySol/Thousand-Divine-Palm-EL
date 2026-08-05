@@ -1053,7 +1053,7 @@ if (ID == 0)
 //SlideMax += SlideMaxAdd;
  if (SlidingTextXVal < SlideMax)
  {
-   SlidingTextXVal = SlidingTextXVal = 1445;
+   SlidingTextXVal = 1445;
    //SlidingTextXVal = SlidingTextXVal + 1445 + 10 * SlideNameCounter;
    // Search the list of last active Hands IF they are still active everytime it resets to the other side of the screen
    
@@ -1093,9 +1093,9 @@ void UpdateSRChart(int value) {
           for (SRChartUpdatelog; SRChartUpdatelog >= 0;){
         SyncRateChart[SRChartUpdatelog].height = SRChartTempVal;
       //  printf(" RESET Number: %d", SRChartUpdatelog);
-         SRChartUpdatelog = SRChartUpdatelog - 1; }
+         SRChartUpdatelog--; }
 //printf(" RESET Number: %d", SRChartUpdatelog);
- SRChartUpdatelog = SRChartUpdatelog  = 0;
+ SRChartUpdatelog  = 0;
     }
 }
 
@@ -1372,7 +1372,7 @@ void BrokerADeal(){ // gets called NON STOP, always checkign for a trade
 if (Buy == true || Sell == true)
 {//ToastNotification("Thinking..!", 0);
      if (RLMODE == 0 && Buy == true)
-    { JudgePerformence;
+    { JudgePerformence();
         DoIt = true;
     } 
 
@@ -2900,7 +2900,7 @@ for (int d = 0; d < strlen(GUITextBox[6].Text); d++)
 
 
 char Hanbuffer[100]; // I realize Now I could just use one buffer and clean it before every new use, But uhh, Next project Ill do that, Id likely learn something else before completing this one and be stuck here forever, Perfecting whats already done.
-snprintf(Hanbuffer, sizeof(Hanbuffer),"%llu             %llu", RTotalActive + LTotalActive, (sizeof(Lefthands) + sizeof(Righthands)) /8); 
+snprintf(Hanbuffer, sizeof(Hanbuffer),"%lu             %lu", RTotalActive + LTotalActive, (sizeof(Lefthands) + sizeof(Righthands)) /8); 
 strcat(Hanbuffer, "!");
 strcpy(GUITextBox[7].Text, Hanbuffer); 
 strcpy(Hanbuffer, "");  // String cat was just repeating endlessly, Forgot to rinse the buffer, Is good now.
