@@ -1153,7 +1153,7 @@ if (value != 0)
 
 void SimulatePriceChange(double *pez)
 {
-    static float data[240];
+    static float data[24000];
     static int index = 0;
     static int loaded = 0;
 //printf("Price %.0lf\n", *pez); // error here, Occaisonally stops at 30 and goes back down, Wait, The ENd of the file, DUH
@@ -1162,7 +1162,7 @@ void SimulatePriceChange(double *pez)
         FILE *f = fopen("SimuData.txt", "r");
         if (!f) return;
 
-        for (int i = 0; i < 240; i++)
+        for (int i = 0; i < 24000; i++)
         {
             if (fscanf(f, "%f", &data[i]) != 1)
                 data[i] = 0.0f;
@@ -1175,7 +1175,7 @@ void SimulatePriceChange(double *pez)
     *pez = data[index];
 
     index++;
-    if (index >= 240)
+    if (index >= 24000)
         index = 0;
 }
 
