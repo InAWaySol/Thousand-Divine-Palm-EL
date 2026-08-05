@@ -6,8 +6,6 @@
 #include <string.h>
 #include <stdarg.h>
 #include <sys/stat.h>
-#include <direct.h>
-#pragma comment(lib, "ws2_32.lib")
 #define NOMINMAX
 #ifndef MAX
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
