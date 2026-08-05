@@ -7,7 +7,7 @@ set(CMAKE_C_STANDARD 11)
 find_package(SDL3 REQUIRED)
 
 add_executable(TDPEL
-    Thousand Divine Palm Enrapturing Light/TDPEL/TDPELmac.c
+    "Thousand Divine Palm Enrapturing Light/TDPEL/TDPELmac.c"
 )
 
 target_include_directories(TDPEL PRIVATE include)
