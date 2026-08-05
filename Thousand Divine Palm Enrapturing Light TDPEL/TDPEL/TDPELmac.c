@@ -780,7 +780,7 @@ if (Shape->StartingTick == 0) // They all start on zero even if started late,
     Shape->PriceArr[0].Tick = Shape->StartingTick;
 
     double StartingPrice = GetPriceAtTick(Shape->StartingTick); // Now you gotta make sure it STARTS at the right tick, IF null start it at GlobalPtick
-    for (size_t N = 0; N < Shape->Size; N++){
+    for (int N = 0; N < Shape->Size; N++){
         if (Shape->PriceArr[N].HigherLower == 0)
         {
             Shape->PriceArr[N].Price = (StartingPrice / 100) * (Shape->PriceArr[N].TrueRelativity + 100); // TrueRelativity is 1% per pixel
@@ -794,9 +794,9 @@ if (Shape->StartingTick == 0) // They all start on zero even if started late,
             Shape->PriceArr[N].Price = StartingPrice;
         }
     }
-for (size_t L = 0; L < Shape->Size; L++)
+for (int L = 0; L < Shape->Size; L++)
 {
-    if (Shape->PriceArr[L].PlointFound = true)
+    if (Shape->PriceArr[L].PlointFound == true)
     {
         Shape->LastPlointFound = L;
         HandID->ActivationRate = ((100 / Shape->Size) * L); // DO THIS for all Hands, Easy to forget, Its purely analytics
@@ -810,7 +810,7 @@ for (size_t L = 0; L < Shape->Size; L++)
     }
     
 }
-    for (size_t j = 0; j < 3; j++) {
+    for (int j = 0; j < 3; j++) {
     
     double TMax = (Shape->Times[Shape->LastPlointFound] / 100) * (Shape->TimeSpread + 100);//may bug out due to parent vals being simple ints
     double TMin = (Shape->Times[Shape->LastPlointFound] / 100) * (100 - Shape->TimeSpread); // This might crash at the last ploint because there is no time for it,. Doesnt need one,
@@ -850,7 +850,7 @@ Shape->PriceArr[Shape->LastPlointFound + 1].Tick = Shape->NextTicktoCheck;
 Shape->NextTicktoCheck = 0;}} // Hopefully it can check multiple ticks per call, Its starting over from zero// Will have to check if I implemented that, THis func was made in a Beautiful flurry of passion, Hesitant to touch it.
 
    if ( GlobalPTick - Shape->PriceArr[Shape->LastPlointFound + 1].Tick > TMax){ //IF it TIME EXPIRES
-     for (size_t k = 1; k < Shape->Size; k++)
+     for (int k = 1; k < Shape->Size; k++)
  {
         Shape->PriceArr[k].PlointFound = false;
  }
@@ -859,7 +859,7 @@ Shape->NextTicktoCheck = 0;}} // Hopefully it can check multiple ticks per call,
         printf("Time Expiry for ID %s\n", HandID->ID);
         printf("Retrying %d\n", j);
     }printf("Check Shape.Size %d\n", Shape->Size);
-    if (Shape->LastPlointFound = Shape->Size - 1)
+    if (Shape->LastPlointFound == Shape->Size - 1)
     {
         HandID->Activation = true;
     }
@@ -2900,7 +2900,7 @@ for (int d = 0; d < strlen(GUITextBox[6].Text); d++)
 
 
 char Hanbuffer[100]; // I realize Now I could just use one buffer and clean it before every new use, But uhh, Next project Ill do that, Id likely learn something else before completing this one and be stuck here forever, Perfecting whats already done.
-snprintf(Hanbuffer, sizeof(Hanbuffer),"%lld             %lld", RTotalActive + LTotalActive, (sizeof(Lefthands) + sizeof(Righthands)) /8); 
+snprintf(Hanbuffer, sizeof(Hanbuffer),"%llu             %llu", RTotalActive + LTotalActive, (sizeof(Lefthands) + sizeof(Righthands)) /8); 
 strcat(Hanbuffer, "!");
 strcpy(GUITextBox[7].Text, Hanbuffer); 
 strcpy(Hanbuffer, "");  // String cat was just repeating endlessly, Forgot to rinse the buffer, Is good now.
