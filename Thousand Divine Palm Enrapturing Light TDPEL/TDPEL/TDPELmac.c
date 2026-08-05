@@ -295,7 +295,7 @@ void SaveFiles(const char *files[4]) {
     strftime(timestamp, sizeof(timestamp), "%Y%m%d_%H%M%S", t);
 
     // Create folder named after timestamp
-    if (mkdir(&timestamp) != 0) {
+    if (mkdir(timestamp, 0755) != 0) {
        // perror("mkdir failed");
         return;
     }
