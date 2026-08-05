@@ -281,7 +281,7 @@ void ChangeCheck(char *current, char *previous, size_t bufferSize) {
     if (strcmp(current, previous) != 0) {
         appendToFile("HandLog.txt", 
                      "Active IDs changed from %.*s to %.*s",previous,current);
-printf("Active IDs changed from %.*s to %.*s\n", previous, current);
+printf("Active IDs changed from %.s to %.s\n", previous, current);
         strncpy(previous, current, bufferSize);
     }
     
@@ -2898,7 +2898,7 @@ for (int d = 0; d < strlen(GUITextBox[6].Text); d++)
 
 
 char Hanbuffer[100]; // I realize Now I could just use one buffer and clean it before every new use, But uhh, Next project Ill do that, Id likely learn something else before completing this one and be stuck here forever, Perfecting whats already done.
-snprintf(Hanbuffer, sizeof(Hanbuffer),"%lu             %lu", RTotalActive + LTotalActive, (sizeof(Lefthands) + sizeof(Righthands)) /8); 
+snprintf(Hanbuffer, sizeof(Hanbuffer),"%d            %lu", RTotalActive + LTotalActive, (sizeof(Lefthands) + sizeof(Righthands)) /8); 
 strcat(Hanbuffer, "!");
 strcpy(GUITextBox[7].Text, Hanbuffer); 
 strcpy(Hanbuffer, "");  // String cat was just repeating endlessly, Forgot to rinse the buffer, Is good now.
