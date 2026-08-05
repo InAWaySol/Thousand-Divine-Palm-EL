@@ -118,7 +118,7 @@ int TimeSpreadStatus = 0;
 int PriceSpreadStatus = 0;
 int TimeMagnitudeStatus = 0;
 int PlointMoving = 0;
-
+int prevplaceholder = 0;
 SDL_FRect PlointCTLeft = {505,75, 24,16};
 SDL_FRect PlointCTRight = {560,75, 24,16};
 bool loopActive = false;
@@ -1718,20 +1718,10 @@ SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
                     x >= buttonRect.x && x <= buttonRect.x + buttonRect.w &&
                     y >= buttonRect.y && y <= buttonRect.y + buttonRect.h) {
                         SDL_ClearAudioStream(stream);
-                            SDL_AudioSpec audioStream;
-                            Uint8 *NewSoundData = NULL;
-                            Uint32 NewSoundLength = 0;
-                            SDL_LoadWAV("audio/StartSound.wav", &audioStream, &NewSoundData, &NewSoundLength);
-
-                            SDL_OpenAudioDeviceStream(
-                            SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK,
-                            &audioStream,
-                            NULL,
-                            NULL);
-
-                            SDL_PutAudioStreamData(stream,
-                               NewSoundData,
-                               NewSoundLength);
+                            SDL_LoadWAV("audio/StartSound.wav", &spec, &audioData, &audioLength);
+                           SDL_PutAudioStreamData(stream,
+                              audioData,
+                              audioLength);
                    // Any setup to input the users API link, Or use the one recorded in the text doc, displayed in the text box already, If changed, it updates the text doc, // Future feature, V3.v  
                     buttonClicked = true;
                 }
@@ -2944,10 +2934,25 @@ SDL_FRect FireDestRect;
 SDL_FRect FireSrcRect;
 
 float placeholder  = RLMODE ? .2 * ((100/ (sizeof(Righthands)/4)) * RTotalActive): .2 * ((100/ (sizeof(Lefthands)/4)) * LTotalActive);
-if (placeholder > 21){ placeholder = 21;};
 
-          for (int i = 0; i < placeholder; i++) {
 
+int AnimationPointCT = (int)(placeholder * 2.33);
+if (AnimationPointCT > 21){ AnimationPointCT  = 21;};
+          for (int i = 0; i < AnimationPointCT; i++) {
+
+            if ( prevplaceholder != AnimationPointCT )
+            { prevplaceholder = AnimationPointCT;
+                        SDL_ClearAudioStream(stream);
+                SDL_free(audioData);
+          SDL_LoadWAV("audio/Flame.wav", &spec, &audioData, &audioLength);
+
+              SDL_ResumeAudioStreamDevice(stream);
+                           SDL_PutAudioStreamData(stream,
+                              audioData,
+                              audioLength);
+                              
+            }
+            
              FireSrcRect.y = FrameHeight;
              FireSrcRect.x = FrameWidth * currentFrame;
              FireSrcRect.h = FrameHeight;
@@ -3603,8 +3608,17 @@ if (Simul == false)
     msgBuySignal = 0;
 // Never SHould both be triggered at one time. Because of the RLMODe switch, If that happens I Got the order flipped around somewhere, 0 is Buy, 1 is Sell
     msgSellSignal = 0;
-    
+         SDL_ClearAudioStream(stream);
+SDL_free(audioData);
+audioData = NULL;
+          SDL_LoadWAV("audio/OF.wav", &spec, &audioData, &audioLength);
+
+              SDL_ResumeAudioStreamDevice(stream);
+                           SDL_PutAudioStreamData(stream,
+                              audioData,
+                              audioLength);
         RLMODE = !RLMODE;
+
         IsMessageRecieved = 0;
         if (BoughtPrice != 0 && SoldPrice != 0)
         {
@@ -3660,6 +3674,15 @@ appendToFile("PerformenceLog.txt",PerformenceSheetFormat); // just adds it to wh
 if (Simul == true)
 {
    RLMODE = !RLMODE;
+     SDL_ClearAudioStream(stream);
+SDL_free(audioData);
+audioData = NULL;
+          SDL_LoadWAV("audio/OF.wav", &spec, &audioData, &audioLength);
+
+              SDL_ResumeAudioStreamDevice(stream);
+                           SDL_PutAudioStreamData(stream,
+                              audioData,
+                              audioLength);
 
     if (BoughtPrice != 0 && SoldPrice != 0)
         {
