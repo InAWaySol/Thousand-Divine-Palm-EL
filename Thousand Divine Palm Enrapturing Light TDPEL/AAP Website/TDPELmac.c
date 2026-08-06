@@ -6,8 +6,6 @@
 #include <string.h>
 #include <stdarg.h>
 #include <sys/stat.h>
-#include <direct.h>
-#pragma comment(lib, "ws2_32.lib")
 #define NOMINMAX
 #ifndef MAX
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
@@ -31,7 +29,6 @@ double SlideCounter = 0;
 double SlideRate = 3;
 int SlideMax = 1;
 double SlideMaxAdd = 0;
-int HSRPC = HSRPlointcount -1; // Deprecate this mes right here
 int SRChartUpdatelog = 0;
 int PriceChartUpdatelog = 0;
 int PriceChartSTARTINGPOINT = 0;
@@ -46,6 +43,7 @@ int LatestTick = 0;
 int MaxTickDelay = 10;
 int GlobalPTick = 0;
 int AlgoTick = 0;
+int prevAlgoTick = 0;
 double GlobalPrice = 0;
 double GlobalVolume = 100.00;
 float Climax = 00.00; //Percent Nearness to closing on a sell or buy, Will be converted to float later,
@@ -283,9 +281,7 @@ void ChangeCheck(char *current, char *previous, size_t bufferSize) {
     if (strcmp(current, previous) != 0) {
         appendToFile("HandLog.txt", 
                      "Active IDs changed from %.*s to %.*s",previous,current);
-
-        printf("Active IDs changed from %.*s to %.*s\n", previous,current);
-
+printf("Active IDs changed from %.s to %.s\n", previous, current);
         strncpy(previous, current, bufferSize);
     }
     
@@ -299,8 +295,8 @@ void SaveFiles(const char *files[4]) {
     strftime(timestamp, sizeof(timestamp), "%Y%m%d_%H%M%S", t);
 
     // Create folder named after timestamp
-    if (mkdir(timestamp) != 0) {
-        perror("mkdir failed");
+    if (mkdir(timestamp, 0755) != 0) {
+       // perror("mkdir failed");
         return;
     }
 
@@ -325,7 +321,9 @@ typedef struct {
     SDL_FRect location;
 } Ploint;
 
-Ploint SyncRateChart[HSRPlointcount];
+Ploint BuySRateChart[HSRPlointcount];
+Ploint SellSRateChart[HSRPlointcount];
+Ploint DisplaySRateChart[HSRPlointcount];
 Ploint ActivationPercentageGauge[2];
 Ploint PriceChart[PriceChartMemMax];
 SDL_FRect PriceChartScrollButton = {394,3,520,520};
@@ -782,7 +780,7 @@ if (Shape->StartingTick == 0) // They all start on zero even if started late,
     Shape->PriceArr[0].Tick = Shape->StartingTick;
 
     double StartingPrice = GetPriceAtTick(Shape->StartingTick); // Now you gotta make sure it STARTS at the right tick, IF null start it at GlobalPtick
-    for (size_t N = 0; N < Shape->Size; N++){
+    for (int N = 0; N < Shape->Size; N++){
         if (Shape->PriceArr[N].HigherLower == 0)
         {
             Shape->PriceArr[N].Price = (StartingPrice / 100) * (Shape->PriceArr[N].TrueRelativity + 100); // TrueRelativity is 1% per pixel
@@ -796,9 +794,9 @@ if (Shape->StartingTick == 0) // They all start on zero even if started late,
             Shape->PriceArr[N].Price = StartingPrice;
         }
     }
-for (size_t L = 0; L < Shape->Size; L++)
+for (int L = 0; L < Shape->Size; L++)
 {
-    if (Shape->PriceArr[L].PlointFound = true)
+    if (Shape->PriceArr[L].PlointFound == true)
     {
         Shape->LastPlointFound = L;
         HandID->ActivationRate = ((100 / Shape->Size) * L); // DO THIS for all Hands, Easy to forget, Its purely analytics
@@ -812,7 +810,7 @@ for (size_t L = 0; L < Shape->Size; L++)
     }
     
 }
-    for (size_t j = 0; j < 3; j++) {
+    for (int j = 0; j < 3; j++) {
     
     double TMax = (Shape->Times[Shape->LastPlointFound] / 100) * (Shape->TimeSpread + 100);//may bug out due to parent vals being simple ints
     double TMin = (Shape->Times[Shape->LastPlointFound] / 100) * (100 - Shape->TimeSpread); // This might crash at the last ploint because there is no time for it,. Doesnt need one,
@@ -852,7 +850,7 @@ Shape->PriceArr[Shape->LastPlointFound + 1].Tick = Shape->NextTicktoCheck;
 Shape->NextTicktoCheck = 0;}} // Hopefully it can check multiple ticks per call, Its starting over from zero// Will have to check if I implemented that, THis func was made in a Beautiful flurry of passion, Hesitant to touch it.
 
    if ( GlobalPTick - Shape->PriceArr[Shape->LastPlointFound + 1].Tick > TMax){ //IF it TIME EXPIRES
-     for (size_t k = 1; k < Shape->Size; k++)
+     for (int k = 1; k < Shape->Size; k++)
  {
         Shape->PriceArr[k].PlointFound = false;
  }
@@ -861,7 +859,7 @@ Shape->NextTicktoCheck = 0;}} // Hopefully it can check multiple ticks per call,
         printf("Time Expiry for ID %s\n", HandID->ID);
         printf("Retrying %d\n", j);
     }printf("Check Shape.Size %d\n", Shape->Size);
-    if (Shape->LastPlointFound = Shape->Size - 1)
+    if (Shape->LastPlointFound == Shape->Size - 1)
     {
         HandID->Activation = true;
     }
@@ -1055,7 +1053,7 @@ if (ID == 0)
 //SlideMax += SlideMaxAdd;
  if (SlidingTextXVal < SlideMax)
  {
-   SlidingTextXVal = SlidingTextXVal = 1445;
+   SlidingTextXVal = 1445;
    //SlidingTextXVal = SlidingTextXVal + 1445 + 10 * SlideNameCounter;
    // Search the list of last active Hands IF they are still active everytime it resets to the other side of the screen
    
@@ -1082,23 +1080,39 @@ SlideCounter = 0;}
 } //This Function is Complete, ORders the Names, and pass it 20 names itll reset to blank and refill next turning, IT has no filter, But that in verison 3.45(a while from now)
 
 
+void UpdateSRChart(float value) {
+    SRChartUpdatelog = HSRPlointcount -1; 
+    
+if (value > 100)
+{
+   value = 100.00f;
+}
 
-void UpdateSRChart(int value) {
-    if (SRChartUpdatelog < HSRPlointcount) {  
-            SyncRateChart[SRChartUpdatelog].height = value;
-           // printf("YEAH%d\n", value);
-           // printf("i val%d\n",SRChartUpdatelog);
-            SRChartUpdatelog = SRChartUpdatelog + 1; }
-    else{ SRChartUpdatelog = SRChartUpdatelog - 1;
-         SRChartTempVal = SyncRateChart[SRChartUpdatelog].height;
-        SyncRateChart[SRChartUpdatelog].height = value;
-          for (SRChartUpdatelog; SRChartUpdatelog >= 0;){
-        SyncRateChart[SRChartUpdatelog].height = SRChartTempVal;
-      //  printf(" RESET Number: %d", SRChartUpdatelog);
-         SRChartUpdatelog = SRChartUpdatelog - 1; }
-//printf(" RESET Number: %d", SRChartUpdatelog);
- SRChartUpdatelog = SRChartUpdatelog  = 0;
-    }
+
+            for (int q = 0; q < SRChartUpdatelog; q++) // q should stop at 38, log at 39
+            {
+        if (RLMODE == 0)
+        {   
+          BuySRateChart[q].height = BuySRateChart[q+1].height;
+        }
+        else{
+          SellSRateChart[q].height = SellSRateChart[q+1].height;
+        }
+            }
+            
+        if (RLMODE == 0)
+        {
+            BuySRateChart[SRChartUpdatelog].height = value;
+            //printf("%f B mode \n", BuySRateChart[SRChartUpdatelog].height);
+        }
+        else{
+            SellSRateChart[SRChartUpdatelog].height = value;
+            //printf("%f S mode\n", SellSRateChart[SRChartUpdatelog].height);
+        }
+           
+            
+       //  SRChartTempVal = RLMODE ? BuySRateChart[SRChartUpdatelog].height: SellSRateChart[SRChartUpdatelog].height;
+
 }
 
 void UpdatePriceChart(double value) {
@@ -1155,9 +1169,10 @@ if (value != 0)
 }
 }
 
-void SimulatePriceChange(double *pez)
+void SimulatePriceChange(double *p, double *v)
 {
-    static float data[240];
+    static float Pricedata[24000];
+    static float Voldata[24000];
     static int index = 0;
     static int loaded = 0;
 //printf("Price %.0lf\n", *pez); // error here, Occaisonally stops at 30 and goes back down, Wait, The ENd of the file, DUH
@@ -1166,20 +1181,20 @@ void SimulatePriceChange(double *pez)
         FILE *f = fopen("SimuData.txt", "r");
         if (!f) return;
 
-        for (int i = 0; i < 240; i++)
+        for (int i = 0; i < 24000; i++)
         {
-            if (fscanf(f, "%f", &data[i]) != 1)
-                data[i] = 0.0f;
+            fscanf(f, "%f,%f", &Pricedata[i],&Voldata[i]);
         }
  
         fclose(f);
         loaded = 1;
     }
 
-    *pez = data[index];
+    *p = Pricedata[index];
+    *v = Voldata[index];
 
     index++;
-    if (index >= 240)
+    if (index >= 24000)
         index = 0;
 }
 
@@ -1374,7 +1389,7 @@ void BrokerADeal(){ // gets called NON STOP, always checkign for a trade
 if (Buy == true || Sell == true)
 {//ToastNotification("Thinking..!", 0);
      if (RLMODE == 0 && Buy == true)
-    { JudgePerformence;
+    { JudgePerformence();
         DoIt = true;
     } 
 
@@ -1672,7 +1687,7 @@ Uint32 winID = SDL_GetWindowID(win);
     {
        PriceChartSTARTINGPOINT-= 5;
     }
-        printf("Wheel: x=%f y=%f\n", interact.wheel.x, interact.wheel.y);
+       // printf("Wheel: x=%f y=%f\n", interact.wheel.x, interact.wheel.y);
     }
 if (interact.type == SDL_EVENT_MOUSE_WHEEL) {
   if (x >= PriceChartScrollButton.x && x <= (PriceChartScrollButton.x + PriceChartScrollButton.w) &&
@@ -1712,7 +1727,7 @@ if (interact.type == SDL_EVENT_MOUSE_WHEEL) {
                         char bufferBP[10];
                         snprintf(bufferBP, sizeof(bufferBP),"%d",BuyPoint);
                         SaveSetting("settings.txt", 11, bufferBP);
-                        printf("Set BuyPoint: %d%%\n", BuyPoint);
+                       // printf("Set BuyPoint: %d%%\n", BuyPoint);
                        // SDL_Delay(50);
                     }
                     if (ReddraggingSlider) {
@@ -1724,7 +1739,7 @@ if (interact.type == SDL_EVENT_MOUSE_WHEEL) {
                         char bufferSP[10];
                         snprintf(bufferSP, sizeof(bufferSP),"%d",SellPoint);
                         SaveSetting("settings.txt", 12, bufferSP);
-                        printf("Set SellPoint: %d%%\n", SellPoint);
+                       // printf("Set SellPoint: %d%%\n", SellPoint);
                        // SDL_Delay(50);
                     }
                 } 
@@ -1939,7 +1954,7 @@ if (PriceSpreadf < 95) {if (PriceSpreadStatus == 2) {PriceSpreadf++;}}
 SDL_RenderTexture(renderer, guitexture, NULL, NULL);
 if (runonce < 1)
 {
-loopActive == false;
+loopActive = false;
 
 
 for (int d = 0; d < 4; d++)
@@ -1952,7 +1967,7 @@ for (int d = 0; d < 4; d++)
          init->Magnitude *= 10; 
         
     }
-     printf("R of 3 Mag%d\n",init->Magnitude );
+     //printf("R of 3 Mag%d\n",init->Magnitude );
  
    for (int h = 0; h <3; h++)
     {    
@@ -2057,6 +2072,7 @@ if (ConnectionActivated)
 
 
 
+
 if (wateranimationComplete == false)
 {
     
@@ -2105,7 +2121,7 @@ if (wateranimationframe == 5)
 };
 printf("Clearing Animation\n");
 memcpy(WaterAnimation, PatternFour, sizeof(WaterAnimation));
-wateranimationComplete = wateranimationComplete = true;
+wateranimationComplete = true;
 }  
 
 if (wateranimationframe == 4){ 
@@ -2154,7 +2170,7 @@ if (wateranimationframe == 3){
 
 
 };
-wateranimationframe = wateranimationframe + 1;
+wateranimationframe += 1;
 //printf("Frame Animation %d\n", wateranimationframe);
 memcpy(WaterAnimation, PatternFour, sizeof(WaterAnimation));
 }   
@@ -2178,7 +2194,7 @@ if (wateranimationframe == 2){
 95,85,65,45,28,17,10,6,6,10,17,28,45,65,85,95,
 100,95,80,55,35,22,14,9,9,14,22,35,55,80,95,100
 };
-wateranimationframe = wateranimationframe + 1;
+wateranimationframe += 1;
 //printf("Frame Animation %d\n", wateranimationframe);
 memcpy(WaterAnimation, PatternThree, sizeof(WaterAnimation));
 }   
@@ -2204,7 +2220,7 @@ if (wateranimationframe == 1){
 
 
 };
-wateranimationframe = wateranimationframe + 1;
+wateranimationframe += 1;;
 //printf("Frame Animation %d\n", wateranimationframe);
 memcpy(WaterAnimation, PatternTwo, sizeof(WaterAnimation));
 }      
@@ -2230,7 +2246,7 @@ int PatternOne[256]={
 100,70,40,20,10,5,3,2,2,3,5,10,20,40,70,100
 
 };
-wateranimationframe = wateranimationframe + 1;
+wateranimationframe  += 1;;
 //printf("Frame Animation %d\n", wateranimationframe);
 memcpy(WaterAnimation, PatternOne, sizeof(WaterAnimation));
 }
@@ -2267,6 +2283,7 @@ WaterClockSpeed = 0;
 
         //   //  // SETTING ASSIGNMENT AREA //    //    //
 
+
         
 
      Setting SetS = {"Empty"}; // Load up user changeable settings here,
@@ -2291,7 +2308,6 @@ WaterClockSpeed = 0;
     if(pF == NULL)
     {
        perror("fopen");
-       printf("Error: %s\n", strerror(errno));
     }
     for (int i = 0; i < sizeof(settings)/sizeof(settings[0]); i++) { 
             fgets(setting, sizeof(setting), pF);
@@ -2859,6 +2875,13 @@ for (int d = 0; d < strlen(GUITextBox[3].Text); d++)
         
 char Volumebuffer[100] = "Volume $";
 char Vbuffer[100];
+if (Simul == true)
+{
+snprintf(Vbuffer, sizeof(Vbuffer), "%.2lf Billion", GlobalVolume);
+}
+else {
+snprintf(Vbuffer, sizeof(Vbuffer), "%.2lf", GlobalVolume);
+}
 snprintf(Vbuffer, sizeof(Vbuffer), "%.2lf", GlobalVolume);
 strcat(Volumebuffer,Vbuffer);
 strcat(Volumebuffer, "!");
@@ -2871,7 +2894,7 @@ for (int d = 0; d < strlen(GUITextBox[4].Text); d++)
 }
 
 
-char Climaxbuffer[100] = "Climax %%"; 
+char Climaxbuffer[100] = "Climax %"; 
 char Cbuffer[100];
 snprintf(Cbuffer, sizeof(Cbuffer), "%.2f", Climax);
 strcat(Climaxbuffer,Cbuffer);
@@ -2903,7 +2926,7 @@ for (int d = 0; d < strlen(GUITextBox[6].Text); d++)
 
 
 char Hanbuffer[100]; // I realize Now I could just use one buffer and clean it before every new use, But uhh, Next project Ill do that, Id likely learn something else before completing this one and be stuck here forever, Perfecting whats already done.
-snprintf(Hanbuffer, sizeof(Hanbuffer),"%d             %d", RTotalActive + LTotalActive, (sizeof(Lefthands) + sizeof(Righthands)) /8); 
+snprintf(Hanbuffer, sizeof(Hanbuffer),"%d            %lu", RTotalActive + LTotalActive, (sizeof(Lefthands) + sizeof(Righthands)) /8); 
 strcat(Hanbuffer, "!");
 strcpy(GUITextBox[7].Text, Hanbuffer); 
 strcpy(Hanbuffer, "");  // String cat was just repeating endlessly, Forgot to rinse the buffer, Is good now.
@@ -2915,19 +2938,18 @@ for (int d = 0; d < strlen(GUITextBox[7].Text); d++)
 }
 
 
-
-               for (size_t i = 0; i <= HSRPC;) {
-            SyncRateChart[i].location.x = 19 + HSRPlointGap * i;
-            SyncRateChart[i].location.w = 13 ;
-            SyncRateChart[i].location.h = 13 ;
-         
-            SyncRateChart[i].location.y = 600 - SyncRateChart[i].height;
-            if (SyncRateChart[i].location.y < 532 )
+     for (int i = 0; i < HSRPlointcount;  i++) {
+            DisplaySRateChart[i].location.x = 19 + HSRPlointGap * i;
+            DisplaySRateChart[i].location.w = 13 ;
+            DisplaySRateChart[i].location.h = 13 ;
+           DisplaySRateChart[i].location.y = 600;
+            DisplaySRateChart[i].location.y -= RLMODE ? (SellSRateChart[i].height * .68) : (BuySRateChart[i].height * .68) ;
+            if ( DisplaySRateChart[i].location.y < 532 )
             {
-                SyncRateChart[i].location.y = 532;
+                 DisplaySRateChart[i].location.y = 532;
             }
-            SDL_RenderTexture(renderer, StarPlointTexture, NULL, &SyncRateChart[i].location);
-            i++;
+            SDL_RenderTexture(renderer, StarPlointTexture, NULL, & DisplaySRateChart[i].location);
+          
         }
      
             for (int j = (PriceChartMemMax - PriceChartSTARTINGPOINT) - PriceChartDisplayRange  ; j <  PriceChartMemMax - PriceChartSTARTINGPOINT;  j++) { 
@@ -3467,6 +3489,11 @@ appendToFile("PerformenceLog.txt",PerformenceSheetFormat); // just adds it to wh
 if (Simul == true)
 {
    RLMODE = !RLMODE;
+
+    DoIt = false;
+   Buy = false;
+    Sell = false;
+      InitiateTimer = false;
      SDL_ClearAudioStream(stream);
 SDL_free(audioData);
 audioData = NULL;
@@ -3508,8 +3535,6 @@ TradeCount++; // Unused atm
 appendToFile("PerformenceLog.txt",PerformenceSheetFormat); // just adds it to whatever free slot is left, We can keep the val of read values thus far and never have to empty the text file
         BoughtPrice = 0; 
         SoldPrice = 0;
-        DoIt = false;
-        InitiateTimer = false;
         } 
 }
 
@@ -3531,7 +3556,7 @@ appendToFile("PerformenceLog.txt",PerformenceSheetFormat); // just adds it to wh
 if (Simul == true)
 {
    if (currentTime - lastTime >= 111) {  // Just delete thi whol ebracketed segment when your done testing
-SimulatePriceChange(&GlobalPrice);
+SimulatePriceChange(&GlobalPrice, &GlobalVolume);
  UpdatePriceChart(GlobalPrice);
          char BufferGPrice[10] = "";
           snprintf(BufferGPrice, sizeof(BufferGPrice),"%lf",GlobalPrice);// Will have to do for Volume also later, But not Right now. Manually clear for now, Because testing phase, But auto Clear at startup o rshutdown
@@ -3548,7 +3573,12 @@ UpdatePriceChart(0); // PURELY to update the chart more often,
             //Just Latest, And Algo, The Latest we have and the the Part the ALgorithms are currently Caught up to 
  //basic Number Others are Logistical Truthes directly coordinated with the price data coming in,
   AlgoTick++;
-UpdateSRChart(Climax); //Chagne to Update on Change later
+  if ( AlgoTick > prevAlgoTick + 333) 
+  {
+   UpdateSRChart(Climax); //Updates ever 333 ticks. 3 data points every 1000 ticks,
+   prevAlgoTick = AlgoTick;
+  }
+  
 Climax = RLMODE ?   PercenttoSell : PercenttoBuy ;
 BrokerADeal(); // always called always looking for a trade when its getting data.
  //printf("Calculating..\r");
