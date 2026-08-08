@@ -1,4 +1,4 @@
-cmake
+
 cmake_minimum_required(VERSION 3.20)
 
 project(TDPEL C)
@@ -16,15 +16,7 @@ target_include_directories(TDPEL PRIVATE include)
 target_link_libraries(TDPEL PRIVATE SDL3::SDL3)
 
 set_target_properties(TDPEL PROPERTIES
+    BUILD_RPATH "@loader_path"
     INSTALL_RPATH "@loader_path"
 )
-
-cmake
-add_custom_command(TARGET TDPEL POST_BUILD
-    COMMAND install_name_tool
-        -change "$<TARGET_FILE:SDL3::SDL3>"
-        "@loader_path/libSDL3.0.dylib"
-        "$<TARGET_FILE:TDPEL>"
-)
-
 
