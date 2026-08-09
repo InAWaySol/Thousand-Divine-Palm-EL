@@ -47,18 +47,38 @@ jobs:
          cp "$(brew --prefix sdl3)/lib/libSDL3.0.dylib" build/
 
       - name: Check code signing
-      run: |
-        echo "=== TDPEL ==="
-        codesign -dv --verbose=4 build/TDPEL 2>&1 || true
-    
-        echo ""
-        echo "=== SDL3 ==="
-        codesign -dv --verbose=4 build/libSDL3.0.dylib 2>&1 || true
-    
-        echo ""
-        echo "=== Quarantine attributes ==="
-        xattr -l build/TDPEL || true
-        xattr -l build/libSDL3.0.dylib || true
+        run: |
+          echo "=== TDPEL ==="
+          codesign -dv --verbose=4 build/TDPEL 2>&1 || true
+      
+          echo ""
+          echo "=== SDL3 ==="
+          codesign -dv --verbose=4 build/libSDL3.0.dylib 2>&1 || true
+      
+          echo ""
+          echo "=== Quarantine attributes ==="
+          xattr -l build/TDPEL || true
+          xattr -l build/libSDL3.0.dylib || true
+
+      - name: Verify bundled SDL3
+        run: |
+          echo "Files:"
+          ls -lh build/
+      
+          echo ""
+          echo "TDPEL dependencies:"
+          otool -L build/TDPEL
+      
+          echo ""
+          echo "SDL3 architecture:"
+          file build/libSDL3.0.dylib
+          lipo -info build/libSDL3.0.dylib
+      
+          echo ""
+          echo "Code signing:"
+          codesign -dv --verbose=4 build/TDPEL 2>&1 || true
+          codesign -dv --verbose=4 build/libSDL3.0.dylib 2>&1 || true
+
 
       - name: Upload
         uses: actions/upload-artifact@v4
