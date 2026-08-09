@@ -44,7 +44,7 @@ jobs:
 
       - name: Copy SDL3 library
         run: |
-          cp "$(brew --prefix sdl3)/lib/libSDL3.dylib" build/
+         cp "$(brew --prefix sdl3)/lib/libSDL3.0.dylib" build/
 
       - name: Upload
         uses: actions/upload-artifact@v4
