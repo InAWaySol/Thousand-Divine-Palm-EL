@@ -99,6 +99,28 @@ jobs:
           echo "=== Quarantine attributes ==="
           xattr -l build/TDPEL || true
           xattr -l build/libSDL3.0.dylib || true
+      
+      - name: Verify final runtime layout
+        run: |
+          echo "=== Final build ==="
+          find build -type f -print
+      
+          echo ""
+          echo "=== Audio ==="
+          ls -lah build/audio/
+      
+          echo ""
+          echo "=== Exact files ==="
+          test -f "build/audio/Amor.wav" && echo "FOUND: build/audio/Amor.wav"
+          test -f "build/audio/StartSound.wav" && echo "FOUND: build/audio/StartSound.wav"
+      
+          echo ""
+          echo "=== Executable directory ==="
+          dirname "$(realpath build/TDPEL)"
+      
+          echo ""
+          echo "=== Executable dependencies ==="
+          otool -L build/TDPEL
 
       - name: Verify bundled SDL3
         run: |
