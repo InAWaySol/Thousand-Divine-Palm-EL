@@ -1389,7 +1389,7 @@ void BrokerADeal(){ // gets called NON STOP, always checkign for a trade
 if (Buy == true || Sell == true)
 {//ToastNotification("Thinking..!", 0);
      if (RLMODE == 0 && Buy == true)
-    { JudgePerformence();
+    { //JudgePerformence();
         DoIt = true;
     } 
 
