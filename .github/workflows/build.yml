@@ -26,6 +26,27 @@ jobs:
           echo ""
           echo "SDL3 dependencies:"
           otool -L "$(brew --prefix sdl3)/lib/libSDL3.dylib"
+      
+      - name: Verify runtime files
+        run: |
+          echo "=== Build directory ==="
+          find build -maxdepth 2 -type f -print
+      
+          echo ""
+          echo "=== Audio files ==="
+          find build -type f \( -iname "*.wav" -o -iname "*.WAV" \) -print
+      
+          echo ""
+          echo "=== Current working directory ==="
+          pwd
+      
+          echo ""
+          echo "=== Audio file check ==="
+          if [ -f "build/audio.amor.wav" ]; then
+            echo "FOUND: build/audio.amor.wav"
+          else
+            echo "MISSING: build/audio.amor.wav"
+          fi
 
       - name: Configure
         run: cmake -B build
