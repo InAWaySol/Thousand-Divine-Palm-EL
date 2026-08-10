@@ -69,7 +69,23 @@ jobs:
                 else
                   echo "MISSING: build/audio.amor.wav"
                 fi
-          
+      - name: Find application assets
+        run: |
+          echo "=== WAV files ==="
+          find . -type f \( -iname "*.wav" -o -iname "*.WAV" \) -print
+      
+          echo ""
+          echo "=== Text files ==="
+          find . -type f \( -iname "*.txt" -o -iname "*.TXT" \) -print
+      
+          echo ""
+          echo "=== Images ==="
+          find . -type f \( \
+            -iname "*.bmp" -o \
+            -iname "*.png" -o \
+            -iname "*.jpg" -o \
+            -iname "*.jpeg" \
+          \) -print
       - name: Check code signing
         run: |
           echo "=== TDPEL ==="
