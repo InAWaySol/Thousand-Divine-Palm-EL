@@ -2799,7 +2799,7 @@ for (int d = 0; d < strlen(ToastNotif.Text); d++)
 }
 
 
-strcpy(GUITextBox[0].Text, "$FTM!");// "YOU ARE A KING*WE ARE APPLYING TO JANE STREET.*ALL OTHERS CANT COMPETE!");
+strcpy(GUITextBox[0].Text, "$BTC!");// "YOU ARE A KING*WE ARE APPLYING TO JANE STREET.*ALL OTHERS CANT COMPETE!");
 TypeTextToScreen(&GUITextBox[0], 1, 860, 10);
 
 for (int d = 0; d < strlen(GUITextBox[0].Text); d++)
@@ -3426,7 +3426,7 @@ if (Simul == false)
          SDL_ClearAudioStream(stream);
 SDL_free(audioData);
 audioData = NULL;
-          SDL_LoadWAV("audio/OF.wav", &spec, &audioData, &audioLength);
+          SDL_LoadWAV("audio/OrderFilled.wav", &spec, &audioData, &audioLength);
 
               SDL_ResumeAudioStreamDevice(stream);
                            SDL_PutAudioStreamData(stream,
