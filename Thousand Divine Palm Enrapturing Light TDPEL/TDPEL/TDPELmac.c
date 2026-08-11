@@ -246,7 +246,8 @@ void createDumpFiles() {
 }
 
 
-
+char imagePath[1024];
+char audioPath[1024];
 
 void appendToFile(const char *filename, const char *format, ...) {
     FILE *file = fopen(filename, "a");
@@ -288,6 +289,23 @@ printf("Active IDs changed from %.s to %.s\n", previous, current);
     strcpy(current, "");
 }
 
+
+void GetAssetPath(const char *relativePath, char *output, size_t outputSize)
+{
+    const char *basePath = SDL_GetBasePath();
+
+    if (basePath == NULL) {
+        fprintf(stderr, "SDL_GetBasePath failed: %s\n", SDL_GetError());
+        output[0] = '\0';
+        return;
+    }
+
+    snprintf(output, outputSize, "%s%s", basePath, relativePath);
+
+    //SDL_free(basePath);
+}
+
+
 void SaveFiles(const char *files[4]) {
     char timestamp[32];
     time_t now = time(NULL);
@@ -295,7 +313,7 @@ void SaveFiles(const char *files[4]) {
     strftime(timestamp, sizeof(timestamp), "%Y%m%d_%H%M%S", t);
 
     // Create folder named after timestamp
-    if (mkdir(timestamp, 0755) != 0) {
+    if (mkdir(timestamp, 0755 ) != 0) {
        // perror("mkdir failed");
         return;
     }
@@ -1471,16 +1489,18 @@ int main(int argc, char* argv[]) {
 SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO); 
     SDL_Window* window = SDL_CreateWindow("Thousand Divine Palms: Enrapturing Light", 512, 512, 0| SDL_WINDOW_BORDERLESS);
     SDL_Renderer* Firstrenderer = SDL_CreateRenderer(window, NULL);
+GetAssetPath("images/ThousandDivinePalm.bmp", audioPath, sizeof(audioPath));
+    SDL_Surface* icon = SDL_LoadBMP(audioPath);
+                             strcpy(audioPath, "");
 
-    SDL_Surface* icon = SDL_LoadBMP("images/ThousandDivinePalm.bmp");
     SDL_SetWindowIcon(window, icon);
-
-    SDL_Surface* bgSurface = SDL_LoadBMP("images/background.bmp");
-
+GetAssetPath("images/background.bmp", audioPath, sizeof(audioPath));
+    SDL_Surface* bgSurface = SDL_LoadBMP(audioPath);
+ strcpy(audioPath, "");
     SDL_Texture* bgTexture = SDL_CreateTextureFromSurface(Firstrenderer, bgSurface);
-
-    SDL_Surface* btnSurface = SDL_LoadBMP("images/button.bmp");
-
+GetAssetPath("images/button.bmp", audioPath, sizeof(audioPath));
+    SDL_Surface* btnSurface = SDL_LoadBMP(audioPath);
+ strcpy(audioPath, "");
     SDL_Texture* btnTexture = SDL_CreateTextureFromSurface(Firstrenderer, btnSurface);
 
     SDL_FRect buttonRect = {218, 256, 80, 38};
@@ -1494,10 +1514,11 @@ SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     Uint8 *audioData = NULL;
     Uint32 audioLength = 0;
 
-    if (!SDL_LoadWAV("audio/Amor.wav", &spec, &audioData, &audioLength))
-    {
-    printf("Load failed: %s\n", SDL_GetError());
-    }
+
+
+GetAssetPath("audio/Amor.wav", audioPath, sizeof(audioPath));
+  SDL_LoadWAV(audioPath, &spec, &audioData, &audioLength);
+    strcpy(audioPath, "");
 
     SDL_AudioStream *stream =
     SDL_OpenAudioDeviceStream(
@@ -1534,7 +1555,9 @@ SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
                     x >= buttonRect.x && x <= buttonRect.x + buttonRect.w &&
                     y >= buttonRect.y && y <= buttonRect.y + buttonRect.h) {
                         SDL_ClearAudioStream(stream);
-                            SDL_LoadWAV("audio/StartSound.wav", &spec, &audioData, &audioLength);
+                          GetAssetPath("audio/StartSound.wav", audioPath, sizeof(audioPath));
+                            SDL_LoadWAV(audioPath, &spec, &audioData, &audioLength);
+                                strcpy(audioPath, "");
                            SDL_PutAudioStreamData(stream,
                               audioData,
                               audioLength);
@@ -1571,25 +1594,83 @@ SDL_Renderer *renderer = SDL_CreateRenderer(win, NULL);
 
 //int plointX = i x gap + SCStartingX,
 //75 pixels available for hand count activation chart, 9 pixel margin top and bottom
-SDL_Surface *gui = SDL_LoadBMP("images/gui.bmp");
+GetAssetPath("images/gui.bmp", audioPath, sizeof(audioPath));
+SDL_Surface *gui = SDL_LoadBMP(audioPath);
+ strcpy(audioPath, "");
+
+ GetAssetPath("images/gui.bmp", audioPath, sizeof(audioPath));
 SDL_Surface *StarPloint = SDL_LoadBMP("images/PlointStar.bmp");
-SDL_Surface *Text = SDL_LoadBMP("images/Text.bmp"); 
-SDL_Surface* PriceChartNotifArrowSurface = SDL_LoadBMP("images/PriceChartNotifArrow.bmp");
-SDL_Surface* BlueknobSurface = SDL_LoadBMP("images/BlueSlider.bmp");
-SDL_Surface* RedknobSurface  = SDL_LoadBMP("images/RedSlider.bmp");
-SDL_Surface* StartButtonSurface  = SDL_LoadBMP("images/StartButton.bmp");
-SDL_Surface* StopButtonSurface  = SDL_LoadBMP("images/StopButton.bmp");
-SDL_Surface* SaveButtonSurface  = SDL_LoadBMP("images/SaveButton.bmp");
-SDL_Surface* SimulButtonSurface  = SDL_LoadBMP("images/SimulButton.bmp");  //sync because it just links the app with a data sorce, simulated or real, price, volume, Tick
-SDL_Surface* NullSaveButtonSurface  = SDL_LoadBMP("images/NullSaveButton.bmp");
-SDL_Surface* NullSimulButtonSurface  = SDL_LoadBMP("images/NullSimulButton.bmp");
-SDL_Surface* FocusWheelZeroSurface  = SDL_LoadBMP("images/FocusNeutral.bmp");
-SDL_Surface* FocusWheelOneSurface  = SDL_LoadBMP("images/FocusOne.bmp");
-SDL_Surface* FocusWheelTwoSurface  = SDL_LoadBMP("images/FocusTwo.bmp");
-SDL_Surface* FocusWheelThreeSurface  = SDL_LoadBMP("images/FocusThree.bmp");
-SDL_Surface* FocusWheelFourSurface  = SDL_LoadBMP("images/FocusFour.bmp");
-SDL_Surface* sheetSurface = SDL_LoadBMP("images/BlueFlameSprite.bmp");
-SDL_Surface* BookButtonSurface = SDL_LoadBMP("images/BookButton.bmp");
+strcpy(audioPath, "");
+
+GetAssetPath("images/Text.bmp", audioPath, sizeof(audioPath));
+SDL_Surface *Text = SDL_LoadBMP(audioPath); 
+strcpy(audioPath, "");
+
+GetAssetPath("images/PriceChartNotifArrow.bmp", audioPath, sizeof(audioPath));
+SDL_Surface* PriceChartNotifArrowSurface = SDL_LoadBMP(audioPath);
+strcpy(audioPath, "");
+
+GetAssetPath("images/BlueSlider.bmp", audioPath, sizeof(audioPath));
+SDL_Surface* BlueknobSurface = SDL_LoadBMP(audioPath);
+strcpy(audioPath, "");
+
+GetAssetPath("images/RedSlider.bmp", audioPath, sizeof(audioPath));
+SDL_Surface* RedknobSurface  = SDL_LoadBMP(audioPath);
+strcpy(audioPath, "");
+
+GetAssetPath("images/StartButton.bmp", audioPath, sizeof(audioPath));
+SDL_Surface* StartButtonSurface  = SDL_LoadBMP(audioPath);
+strcpy(audioPath, "");
+
+GetAssetPath("images/StopButton.bmp", audioPath, sizeof(audioPath));
+SDL_Surface* StopButtonSurface  = SDL_LoadBMP(audioPath);
+strcpy(audioPath, "");
+
+GetAssetPath("images/SaveButton.bmp", audioPath, sizeof(audioPath));
+SDL_Surface* SaveButtonSurface  = SDL_LoadBMP(audioPath);
+strcpy(audioPath, "");
+
+GetAssetPath("images/SimulButton.bmp", audioPath, sizeof(audioPath));
+SDL_Surface* SimulButtonSurface  = SDL_LoadBMP(audioPath);  
+strcpy(audioPath, "");
+//sync because it just links the app with a data sorce, simulated or real, price, volume, Tick
+GetAssetPath("images/NullSaveButton.bmp", audioPath, sizeof(audioPath));
+SDL_Surface* NullSaveButtonSurface  = SDL_LoadBMP(audioPath);
+strcpy(audioPath, "");
+
+GetAssetPath("images/NullSimulButton.bmp", audioPath, sizeof(audioPath));
+SDL_Surface* NullSimulButtonSurface  = SDL_LoadBMP(audioPath);
+strcpy(audioPath, "");
+
+GetAssetPath("images/FocusNeutral.bmp", audioPath, sizeof(audioPath));
+SDL_Surface* FocusWheelZeroSurface  = SDL_LoadBMP(audioPath);
+strcpy(audioPath, "");
+
+GetAssetPath("images/FocusOne.bmp", audioPath, sizeof(audioPath));
+SDL_Surface* FocusWheelOneSurface  = SDL_LoadBMP(audioPath);
+strcpy(audioPath, "");
+
+GetAssetPath("images/FocusTwo.bmp", audioPath, sizeof(audioPath));
+SDL_Surface* FocusWheelTwoSurface  = SDL_LoadBMP(audioPath);
+strcpy(audioPath, "");
+
+GetAssetPath("images/FocusThree.bmp", audioPath, sizeof(audioPath));
+SDL_Surface* FocusWheelThreeSurface  = SDL_LoadBMP(audioPath);
+strcpy(audioPath, "");
+
+GetAssetPath("images/FocusFour.bmp", audioPath, sizeof(audioPath));
+SDL_Surface* FocusWheelFourSurface  = SDL_LoadBMP(audioPath);
+strcpy(audioPath, "");
+
+GetAssetPath("images/BlueFlameSprite.bmp", audioPath, sizeof(audioPath));
+SDL_Surface* sheetSurface = SDL_LoadBMP(audioPath);
+strcpy(audioPath, "");
+
+GetAssetPath("images/BookButton.bmp", audioPath, sizeof(audioPath));
+SDL_Surface* BookButtonSurface = SDL_LoadBMP(audioPath);
+strcpy(audioPath, "");
+
+
 SDL_Texture *guitexture = SDL_CreateTextureFromSurface(renderer, gui);
 SDL_Texture *StarPlointTexture = SDL_CreateTextureFromSurface(renderer, StarPloint);
 SDL_Texture *TextTexture = SDL_CreateTextureFromSurface(renderer, Text);
@@ -2753,7 +2834,9 @@ if (AnimationPointCT > 21){ AnimationPointCT  = 21;};
             { prevplaceholder = AnimationPointCT;
                         SDL_ClearAudioStream(stream);
                 SDL_free(audioData);
-          SDL_LoadWAV("audio/Flame.wav", &spec, &audioData, &audioLength);
+                 GetAssetPath("audio/Flame.wav", audioPath, sizeof(audioPath));
+                            SDL_LoadWAV(audioPath, &spec, &audioData, &audioLength);
+                                strcpy(audioPath, "");
 
               SDL_ResumeAudioStreamDevice(stream);
                            SDL_PutAudioStreamData(stream,
@@ -3426,7 +3509,10 @@ if (Simul == false)
          SDL_ClearAudioStream(stream);
 SDL_free(audioData);
 audioData = NULL;
-          SDL_LoadWAV("audio/OrderFilled.wav", &spec, &audioData, &audioLength);
+
+GetAssetPath("audio/OrderFilled.wav", audioPath, sizeof(audioPath));
+                            SDL_LoadWAV(audioPath, &spec, &audioData, &audioLength);
+                                strcpy(audioPath, "");
 
               SDL_ResumeAudioStreamDevice(stream);
                            SDL_PutAudioStreamData(stream,
@@ -3497,8 +3583,9 @@ if (Simul == true)
      SDL_ClearAudioStream(stream);
 SDL_free(audioData);
 audioData = NULL;
-          SDL_LoadWAV("audio/OrderFilled.wav", &spec, &audioData, &audioLength);
-
+    GetAssetPath("audio/OrderFilled.wav", audioPath, sizeof(audioPath));
+                            SDL_LoadWAV(audioPath, &spec, &audioData, &audioLength);
+                                strcpy(audioPath, "");
               SDL_ResumeAudioStreamDevice(stream);
                            SDL_PutAudioStreamData(stream,
                               audioData,
