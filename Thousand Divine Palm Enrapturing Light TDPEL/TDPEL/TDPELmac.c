@@ -216,11 +216,12 @@ void CopyBoosts(TheFiveVirtues* dist, const TheFiveVirtues* src) {
 }
 
 
+
     const char *filenames[] = {
-        "HandLog.txt", // Hand Activation and Deactivation Change log
-        "PriceLog.txt", 
-        "PerformenceLog.txt",
-        "FreeSlot.txt" 
+       "HandffLog.txt",
+    "PriceffLog.txt",
+    "PerfoffrmenceLog.txt",
+    "FreeSffflot.txt"
     };
 void createDumpFiles() {
 
@@ -246,8 +247,11 @@ void createDumpFiles() {
 }
 
 
-char imagePath[1024];
 char audioPath[1024];
+char PriceLogPath[1024];
+char HandLogPath[1024];
+char PerformenceLogPath[1024];
+char FreeSlotPath[1024];
 
 void appendToFile(const char *filename, const char *format, ...) {
     FILE *file = fopen(filename, "a");
@@ -280,8 +284,9 @@ void appendToFile(const char *filename, const char *format, ...) {
 
 void ChangeCheck(char *current, char *previous, size_t bufferSize) {
     if (strcmp(current, previous) != 0) {
-        appendToFile("HandLog.txt", 
+        appendToFile(filenames[0], 
                      "Active IDs changed from %.*s to %.*s",previous,current);
+                     strcpy(audioPath, "");
 printf("Active IDs changed from %.s to %.s\n", previous, current);
         strncpy(previous, current, bufferSize);
     }
@@ -313,20 +318,30 @@ void SaveFiles(const char *files[4]) {
     strftime(timestamp, sizeof(timestamp), "%Y%m%d_%H%M%S", t);
 
     // Create folder named after timestamp
-    if (mkdir(timestamp, 0755 ) != 0) {
+    if (mkdir(timestamp, 0755  ) != 0) {
        // perror("mkdir failed");
         return;
     }
 
     for (int i = 0; i < 4; i++) {
         char new_filename[512];
-        snprintf(new_filename, sizeof(new_filename), "%s/%s_%s", timestamp, timestamp, files[i]);
+        char baseName[512];
+
+        const char *last_slash = strrchr(files[i], '/');
+
+if (last_slash != NULL) {
+    snprintf(baseName, sizeof(baseName), "%s", last_slash + 1);
+}
+        snprintf(new_filename, sizeof(new_filename), "%s_%s", timestamp, baseName);
 
         if (rename(files[i], new_filename) != 0) {
             perror("rename failed");
+            printf("Moved %s to %s\n", baseName, new_filename);
+           
         } else {
-            printf("Moved %s to %s\n", files[i], new_filename);
+            printf("Moved %s to %s\n",files[i], new_filename);
         }
+         strcpy(baseName,"");
     }
 }
 
@@ -482,8 +497,9 @@ snprintf(HTABuffer, sizeof(HTABuffer),"%d %.0f %d ", Chosen->PriceArr[y].HigherL
 }
 
 
-SaveSetting("ArcTypeHANDs.txt",StructLoc +1,HandTAFormat);
-
+GetAssetPath("ArcTypeHANDs.txt" , audioPath, sizeof(audioPath));
+SaveSetting(audioPath,StructLoc +1,HandTAFormat);
+strcpy(audioPath,"");
 //printf("HERE %s\n",HandTAFormat);
 }
 
@@ -492,12 +508,15 @@ SaveSetting("ArcTypeHANDs.txt",StructLoc +1,HandTAFormat);
 void FetchHandLog(int StructLoc)
 {
     HandTypePlointArch* Chose = RelativeLocationA[StructLoc];
-       printf("Struct Location # %d\n", StructLoc);
+    //   printf("Struct Location # %d\n", StructLoc);
     
     if (StructLoc + 1 < 1)
         return;
+GetAssetPath("ArcTypeHANDs.txt" , audioPath, sizeof(audioPath));
 
-    FILE *file = fopen("ArcTypeHANDs.txt", "r");
+
+    FILE *file = fopen(audioPath, "r");
+    strcpy(audioPath,"");
     if (!file)
         return;
 
@@ -671,7 +690,10 @@ if ( Tick == LatestTick)
 }
 
 
-    FILE *file = fopen("PriceLog.txt", "r");
+
+GetAssetPath("PriceLog.txt" , audioPath, sizeof(audioPath));
+    FILE *file = fopen(audioPath, "r");
+    strcpy(audioPath,"");
     if (file == NULL){
         printf("PriceLog File Missing");
         return 0.0;
@@ -731,7 +753,7 @@ RuleOfThreeParts* RuleOfThreeBinder[4] = {&One, &Four, &Five, &Six};
 
 
 
-void RuleOfThree( Hand* HandID,RuleOfThreeParts* ROfTHand){ // MUST be initialized NextTick to CHeck is 0, Tick vals are 0 through count to three, Magnitude default 1, First point default NOT FOUDN, starts at tick 0
+void RuleOfThree( Hand* HandID,RuleOfThreeParts* ROfTHand){ // MUST be initlalized NextTick to CHeck is 0, Tick vals are 0 through count to three, Magnitude default 1, First point default NOT FOUDN, starts at tick 0
     
       
           for (int i = 0; i < 3; i++)
@@ -1195,8 +1217,10 @@ void SimulatePriceChange(double *p, double *v)
     static int loaded = 0;
 //printf("Price %.0lf\n", *pez); // error here, Occaisonally stops at 30 and goes back down, Wait, The ENd of the file, DUH
     if (!loaded)
-    {
-        FILE *f = fopen("SimuData.txt", "r");
+    { 
+GetAssetPath("SimuData.txt" , audioPath, sizeof(audioPath));
+        FILE *f = fopen(audioPath, "r");
+        strcpy(audioPath,"");
         if (!f) return;
 
         for (int i = 0; i < 24000; i++)
@@ -1263,8 +1287,9 @@ void JudgePerformence(){
     // MUST read all data available to assess not just the first three we have, Read until string empty
     // This part reads the text log and Updates median wait and badsequences in a row
 
-
-    FILE *txtfile = fopen("PerformenceLog.txt", "r");
+GetAssetPath("PerformenceLog.txt" , audioPath, sizeof(audioPath));
+    FILE *txtfile = fopen(audioPath, "r");
+            strcpy(audioPath,"");
     if (!txtfile){return;}
         
 
@@ -1383,7 +1408,9 @@ else{
 
                 char bufferPL[10];
                 snprintf(bufferPL, sizeof(bufferPL),"%d",PerformenceLogBookmark);
-                SaveSetting("settings.txt", 21, bufferPL);
+                GetAssetPath("settings.txt" , audioPath, sizeof(audioPath));
+                SaveSetting(audioPath, 21, bufferPL);
+                strcpy(audioPath,"");
                 fclose(txtfile);
                 return;
             }  
@@ -1807,7 +1834,9 @@ if (interact.type == SDL_EVENT_MOUSE_WHEEL) {
                         if (BuyPoint < 1){ BuyPoint = 1;}
                         char bufferBP[10];
                         snprintf(bufferBP, sizeof(bufferBP),"%d",BuyPoint);
-                        SaveSetting("settings.txt", 11, bufferBP);
+                        GetAssetPath("settings.txt" , audioPath, sizeof(audioPath));
+                        SaveSetting(audioPath, 11, bufferBP);
+                         strcpy(audioPath,"");
                        // printf("Set BuyPoint: %d%%\n", BuyPoint);
                        // SDL_Delay(50);
                     }
@@ -1819,7 +1848,9 @@ if (interact.type == SDL_EVENT_MOUSE_WHEEL) {
                         if (SellPoint < 1){ SellPoint = 1;}
                         char bufferSP[10];
                         snprintf(bufferSP, sizeof(bufferSP),"%d",SellPoint);
-                        SaveSetting("settings.txt", 12, bufferSP);
+                        GetAssetPath("settings.txt" , audioPath, sizeof(audioPath));
+                        SaveSetting(audioPath, 12, bufferSP);
+                         strcpy(audioPath,"");
                        // printf("Set SellPoint: %d%%\n", SellPoint);
                        // SDL_Delay(50);
                     }
@@ -1853,25 +1884,37 @@ if (interact.type == SDL_EVENT_MOUSE_WHEEL) {
         y >= FocusWheelOne.y && y <= (FocusWheelOne.y + FocusWheelOne.h))  {
         FocusWheelSetting = 1;
 printf("Focus %d\n", FocusWheelSetting);
-SaveSetting("settings.txt",20,"1");
+GetAssetPath("settings.txt", audioPath, sizeof(audioPath));
+SaveSetting(audioPath,20,"1");
+
+strcpy(audioPath, "");
         }
           if (x >= FocusWheelTwo.x && x <= (FocusWheelTwo.x + FocusWheelTwo.w) &&
         y >= FocusWheelTwo.y && y <= (FocusWheelTwo.y + FocusWheelTwo.h))  {
         FocusWheelSetting = 2;
 printf("Focus %d\n", FocusWheelSetting);
-SaveSetting("settings.txt",20,"2");
+GetAssetPath("settings.txt", audioPath, sizeof(audioPath));
+SaveSetting(audioPath,20,"2");
+
+strcpy(audioPath, "");
         }
           if (x >= FocusWheelThree.x && x <= (FocusWheelThree.x + FocusWheelThree.w) &&
         y >= FocusWheelThree.y && y <= (FocusWheelThree.y + FocusWheelThree.h))  {
         FocusWheelSetting = 3;
 printf("Focus %d\n", FocusWheelSetting);
-SaveSetting("settings.txt",20,"3");
+GetAssetPath("settings.txt", audioPath, sizeof(audioPath));
+SaveSetting(audioPath,20,"3");
+
+strcpy(audioPath, "");
         }
           if (x >= FocusWheelFour.x && x <= (FocusWheelFour.x + FocusWheelFour.w) &&
         y >= FocusWheelFour.y && y <= (FocusWheelFour.y + FocusWheelFour.h))  {
         FocusWheelSetting = 4;
 printf("Focus %d\n", FocusWheelSetting);
-SaveSetting("settings.txt",20,"4");
+GetAssetPath("settings.txt", audioPath, sizeof(audioPath));
+SaveSetting(audioPath,20,"4");
+
+strcpy(audioPath, "");
         }
         if (x >= BookButtonLoc.x && x <= (BookButtonLoc.x + BookButtonLoc.w) &&
         y >= BookButtonLoc.y && y <= (BookButtonLoc.y + BookButtonLoc.h))  {
@@ -1881,7 +1924,10 @@ SaveSetting("settings.txt",20,"4");
         y >= FocusWheelZero.y && y <= (FocusWheelZero.y + FocusWheelZero.h))  {
         FocusWheelSetting = 0;
 printf("Focus %d\n", FocusWheelSetting);
-SaveSetting("settings.txt",20,"0");
+GetAssetPath("settings.txt", audioPath, sizeof(audioPath));
+SaveSetting(audioPath,20,"0");
+
+strcpy(audioPath, "");
         }
  
           
@@ -2036,8 +2082,15 @@ SDL_RenderTexture(renderer, guitexture, NULL, NULL);
 if (runonce < 1)
 {
 loopActive = false;
-
-
+GetAssetPath("HandLog.txt", HandLogPath, sizeof(HandLogPath));
+GetAssetPath("PriceLog.txt", PriceLogPath, sizeof(PriceLogPath));
+GetAssetPath("PerformenceLog.txt", PerformenceLogPath, sizeof(PerformenceLogPath));
+GetAssetPath("FreeSlot.txt" , FreeSlotPath, sizeof(FreeSlotPath));
+filenames[0] = HandLogPath;
+filenames[1] = PriceLogPath;
+filenames[2] = PerformenceLogPath;
+filenames[3] = FreeSlotPath; 
+printf(" FIle path%s\n",filenames[0] );
 for (int d = 0; d < 4; d++)
 {
     RuleOfThreeParts* init = RuleOfThreeBinder[d];
@@ -2383,8 +2436,10 @@ WaterClockSpeed = 0;
      Setting SetPerformenceLogBookmark = {"Empty"};
 // * * * Settings Area * * * // 
      Setting *settings[] = {&SetS, &SetA, &SetB, &SetC, &SetD,&SetTrueNeutral,&SetHuman,&SetBomb,&SetBabel,&SetIndustry,&RPSelected,&LPSelected,&SetFocusWheel,&SetPerformenceLogBookmark};
+GetAssetPath("settings.txt", audioPath, sizeof(audioPath));
 
-    FILE *pF = fopen("settings.txt", "r");
+    FILE *pF = fopen(audioPath, "r");
+  
     char setting[255];
     if(pF == NULL)
     {
@@ -2396,7 +2451,7 @@ WaterClockSpeed = 0;
             //printf("Loading Settings\r ");
         }
         fclose(pF); 
-
+  strcpy(audioPath, "");
         // AT THIS POINT in the code, all settings are already pulled from the settings text file.
         // In the MARKED line below all Settings to used variable conversions and assignments are to be done in the same area,
 
@@ -3215,16 +3270,49 @@ Bookrenderer = SDL_CreateRenderer(BOOK, NULL);
 //SDL_RenderFillRect(Bookrenderer, &PageTurnLeft);
 //SDL_SetRenderDrawColor(Bookrenderer,200, 100, 150, 255);
 //SDL_RenderFillRect(Bookrenderer, &PageTurnRight);
-BookText = SDL_LoadBMP("images/BookText.bmp");
-bookSurface = SDL_LoadBMP("images/Book.bmp");
-BookCoverSurface = SDL_LoadBMP("images/CoverPage.bmp");
-BookBasicSurface = SDL_LoadBMP("images/BookBasic.bmp");
-PlointSurface = SDL_LoadBMP("images/ArcPloints.bmp");
-HRankS = SDL_LoadBMP("images/Gold.bmp");
-HRankA = SDL_LoadBMP("images/Silver.bmp");
-HRankB = SDL_LoadBMP("images/Royal.bmp");
+
+                          
+
+GetAssetPath("images/BookText.bmp", audioPath, sizeof(audioPath));
+BookText = SDL_LoadBMP(audioPath);
+   strcpy(audioPath, "");
+
+GetAssetPath("images/Book.bmp", audioPath, sizeof(audioPath));
+bookSurface = SDL_LoadBMP(audioPath);
+  strcpy(audioPath, "");
+
+GetAssetPath("images/CoverPage.bmp", audioPath, sizeof(audioPath));
+BookCoverSurface = SDL_LoadBMP(audioPath);
+ strcpy(audioPath, "");
+
+GetAssetPath("images/BookBasic.bmp", audioPath, sizeof(audioPath));
+BookBasicSurface = SDL_LoadBMP(audioPath);
+ strcpy(audioPath, "");
+
+GetAssetPath("images/ArcPloints.bmp", audioPath, sizeof(audioPath));
+PlointSurface = SDL_LoadBMP(audioPath);
+ strcpy(audioPath, "");
+
+GetAssetPath("images/Gold.bmp", audioPath, sizeof(audioPath));
+HRankS = SDL_LoadBMP(audioPath);
+ strcpy(audioPath, "");
+
+GetAssetPath("images/Silver.bmp", audioPath, sizeof(audioPath));
+HRankA = SDL_LoadBMP(audioPath);
+ strcpy(audioPath, "");
+
+GetAssetPath("images/Royal.bmp", audioPath, sizeof(audioPath));
+HRankB = SDL_LoadBMP(audioPath);
+ strcpy(audioPath, "");
+
+GetAssetPath("images/Red.bmp", audioPath, sizeof(audioPath));
 HRankC = SDL_LoadBMP("images/Red.bmp");
-HRankD = SDL_LoadBMP("images/Blue.bmp");
+ strcpy(audioPath, "");
+
+GetAssetPath("images/Blue.bmp", audioPath, sizeof(audioPath));
+HRankD = SDL_LoadBMP(audioPath);
+ strcpy(audioPath, "");
+
 BookTexture = SDL_CreateTextureFromSurface(Bookrenderer, bookSurface);
 BookTextTexture = SDL_CreateTextureFromSurface(Bookrenderer, BookText);
 BookCoverTexture = SDL_CreateTextureFromSurface(Bookrenderer, BookCoverSurface);
@@ -3549,8 +3637,11 @@ snprintf(PerformenceBuffer, sizeof(PerformenceBuffer),"%.3f %s %d ", PercentChan
 strcat(PerformenceSheetFormat,PerformenceBuffer);
 strcpy(PerformenceBuffer,"");
 TradeCount++; // Unused atm
-appendToFile("PerformenceLog.txt",PerformenceSheetFormat); // just adds it to whatever free slot is left, We can keep the val of read values thus far and never have to empty the text file
-        BoughtPrice = 0; 
+GetAssetPath("PerformenceLog.txt", audioPath, sizeof(audioPath));
+appendToFile(audioPath,PerformenceSheetFormat); // just adds it to whatever free slot is left, We can keep the val of read values thus far and never have to empty the text file
+        strcpy(audioPath, "");
+
+BoughtPrice = 0; 
         SoldPrice = 0;
         DoIt = false;
         TransmissionCT = 0;
@@ -3619,8 +3710,10 @@ snprintf(PerformenceBuffer, sizeof(PerformenceBuffer),"%.3f %s %d ", PercentChan
 strcat(PerformenceSheetFormat,PerformenceBuffer);
 strcpy(PerformenceBuffer,"");
 TradeCount++; // Unused atm
-appendToFile("PerformenceLog.txt",PerformenceSheetFormat); // just adds it to whatever free slot is left, We can keep the val of read values thus far and never have to empty the text file
-        BoughtPrice = 0; 
+GetAssetPath("PerformenceLog.txt", audioPath, sizeof(audioPath));
+appendToFile(audioPath,PerformenceSheetFormat); // just adds it to whatever free slot is left, We can keep the val of read values thus far and never have to empty the text file
+        strcpy(audioPath, "");
+         BoughtPrice = 0; 
         SoldPrice = 0;
         } 
 }
@@ -3647,7 +3740,11 @@ SimulatePriceChange(&GlobalPrice, &GlobalVolume);
  UpdatePriceChart(GlobalPrice);
          char BufferGPrice[10] = "";
           snprintf(BufferGPrice, sizeof(BufferGPrice),"%lf",GlobalPrice);// Will have to do for Volume also later, But not Right now. Manually clear for now, Because testing phase, But auto Clear at startup o rshutdown
-         appendToFile("PriceLog.txt", BufferGPrice);
+         
+         GetAssetPath("PriceLog.txt", audioPath, sizeof(audioPath));
+appendToFile(audioPath, BufferGPrice);
+strcpy(audioPath, "");
+          
          strcpy(BufferGPrice, "");
 LatestTick ++;
 lastTime = currentTime;
