@@ -100,28 +100,7 @@ jobs:
           xattr -l build/TDPEL || true
           xattr -l build/libSDL3.0.dylib || true
       
-      - name: Verify final runtime layout
-        run: |
-          echo "=== Final build ==="
-          find build -type f -print
-      
-          echo ""
-          echo "=== Audio ==="
-          ls -lah build/audio/
-      
-          echo ""
-          echo "=== Exact files ==="
-          test -f "build/audio/Amor.wav" && echo "FOUND: build/audio/Amor.wav"
-          test -f "build/audio/StartSound.wav" && echo "FOUND: build/audio/StartSound.wav"
-      
-          echo ""
-          echo "=== Executable directory ==="
-          dirname "$(realpath build/TDPEL)"
-      
-          echo ""
-          echo "=== Executable dependencies ==="
-          otool -L build/TDPEL
-
+     
       - name: Verify bundled SDL3
         run: |
           echo "Files:"
@@ -141,50 +120,8 @@ jobs:
           codesign -dv --verbose=4 build/TDPEL 2>&1 || true
           codesign -dv --verbose=4 build/libSDL3.0.dylib 2>&1 || true
       
-      - name: Test runtime working directory
-        working-directory: build
-        run: |
-          echo "=== Working directory ==="
-          pwd
-      
-          echo ""
-          echo "=== Files ==="
-          ls -lah
-          ls -lah audio
-      
-          echo ""
-          echo "=== Audio files ==="
-          test -f "audio/Amor.wav" && echo "FOUND: audio/Amor.wav"
-          test -f "audio/StartSound.wav" && echo "FOUND: audio/StartSound.wav"
-      
-          echo ""
-          echo "=== Running application ==="
-          ./TDPEL
-      
-      - name: Test runtime paths
-        working-directory: build
-        run: |
-          echo "Working directory:"
-          pwd
-      
-          echo ""
-          echo "Testing audio/Amor.wav:"
-          if [ -f "audio/Amor.wav" ]; then
-            echo "SUCCESS: audio/Amor.wav is accessible"
-          else
-            echo "FAIL: audio/Amor.wav is not accessible"
-            exit 1
-          fi
-      
-          echo ""
-          echo "Testing audio/StartSound.wav:"
-          if [ -f "audio/StartSound.wav" ]; then
-            echo "SUCCESS: audio/StartSound.wav is accessible"
-          else
-            echo "FAIL: audio/StartSound.wav is not accessible"
-            exit 1
-          fi
 
+      
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
