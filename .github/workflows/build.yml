@@ -1,0 +1,130 @@
+name: Build macOS
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install SDL3
+        run: brew install sdl3
+
+      - name: Check SDL3 installation
+        run: |
+          echo "SDL3 prefix:"
+          brew --prefix sdl3
+
+          echo ""
+          echo "SDL3 library:"
+          ls -l "$(brew --prefix sdl3)/lib/"
+
+          echo ""
+          echo "SDL3 dependencies:"
+          otool -L "$(brew --prefix sdl3)/lib/libSDL3.dylib"
+      
+      
+
+      - name: Configure
+        run: cmake -B build
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Check executable
+        run: |
+          echo "Executable:"
+          file build/TDPEL
+
+          echo ""
+          echo "Executable dependencies:"
+          otool -L build/TDPEL
+
+      - name: Copy SDL3 library
+        run: |
+         cp "$(brew --prefix sdl3)/lib/libSDL3.0.dylib" build/
+
+
+      - name: Verify runtime files
+        run: |
+                echo "=== Build directory ==="
+                find build -maxdepth 2 -type f -print
+            
+                echo ""
+                echo "=== Audio files ==="
+                find build -type f \( -iname "*.wav" -o -iname "*.WAV" \) -print
+            
+                echo ""
+                echo "=== Current working directory ==="
+                pwd
+            
+                echo ""
+                echo "=== Audio file check ==="
+                if [ -f "build/audio.amor.wav" ]; then
+                  echo "FOUND: build/audio.amor.wav"
+                else
+                  echo "MISSING: build/audio.amor.wav"
+                fi
+      - name: Find application assets
+        run: |
+          echo "=== WAV files ==="
+          find . -type f \( -iname "*.wav" -o -iname "*.WAV" \) -print
+      
+          echo ""
+          echo "=== Text files ==="
+          find . -type f \( -iname "*.txt" -o -iname "*.TXT" \) -print
+      
+          echo ""
+          echo "=== Images ==="
+          find . -type f \( \
+            -iname "*.bmp" -o \
+            -iname "*.png" -o \
+            -iname "*.jpg" -o \
+            -iname "*.jpeg" \
+          \) -print
+      - name: Check code signing
+        run: |
+          echo "=== TDPEL ==="
+          codesign -dv --verbose=4 build/TDPEL 2>&1 || true
+      
+          echo ""
+          echo "=== SDL3 ==="
+          codesign -dv --verbose=4 build/libSDL3.0.dylib 2>&1 || true
+      
+          echo ""
+          echo "=== Quarantine attributes ==="
+          xattr -l build/TDPEL || true
+          xattr -l build/libSDL3.0.dylib || true
+      
+     
+      - name: Verify bundled SDL3
+        run: |
+          echo "Files:"
+          ls -lh build/
+      
+          echo ""
+          echo "TDPEL dependencies:"
+          otool -L build/TDPEL
+      
+          echo ""
+          echo "SDL3 architecture:"
+          file build/libSDL3.0.dylib
+          lipo -info build/libSDL3.0.dylib
+      
+          echo ""
+          echo "Code signing:"
+          codesign -dv --verbose=4 build/TDPEL 2>&1 || true
+          codesign -dv --verbose=4 build/libSDL3.0.dylib 2>&1 || true
+      
+
+      
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: macOS-build
+          path: build
+          
