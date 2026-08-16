@@ -246,7 +246,9 @@ void createDumpFiles() {
                 fclose(file);
             }
         }
-    }
+    } 
+    fclose(file);
+
 }
 
 
@@ -383,6 +385,7 @@ HandTypePlointArch EightTeen;
 
 HandTypePlointArch* RelativeLocationA[4] = {&Two, &Three, &Seven, &EightTeen};
 int RelativeLocationB[4] = {2,3,7,18};// The correlated page numbers. its a sorting list
+
 
 
 void SaveSetting(const char* filename, int lineNumber, const char* text)
@@ -646,7 +649,6 @@ Plointdest[e].h = 9;
 //}
 
 
-
 double GetPriceAtTick (int Tick){ // Ill probably run my app 1 tick behind so we can reliably pluck data from our own personal text store,
 
 double Price;
@@ -659,7 +661,7 @@ if ( Tick == LatestTick)
 
     FILE *file = fopen("PriceLog.txt", "r");
     if (file == NULL){
-        printf("PriceLog File Missing");
+        printf("PriceLog File Missing\n");
         return 0.0;
     }
    
@@ -727,7 +729,7 @@ void RuleOfThree( Hand* HandID,RuleOfThreeParts* ROfTHand){ // MUST be initializ
        if (HandID->Activation == false)
        {
         double price = 0;
-         if (ROfTHand->CountToThree[i].Found == false)
+         if (ROfTHand->CountToThree[2].Found == false)
          { //printf(" SEARCHING Check %s\n", HandID->ID);
            for (int k = 0; k < ROfTHand->Magnitude; k++)
            {
@@ -743,13 +745,7 @@ void RuleOfThree( Hand* HandID,RuleOfThreeParts* ROfTHand){ // MUST be initializ
               printf("Point %d Found for %s  AT Tick %d\n",i, HandID->ID,ROfTHand->CountToThree[i].Tick );
            }
 
-           if (ROfTHand->CountToThree[i].price < ROfTHand->CountToThree[i-1].price)
-           { 
-           printf(" Trying again %s  %d\n", HandID->ID, i);
-           for (int b = 0; b < 3; b++)
-           {ROfTHand->CountToThree[b].Found = false;}
-           }
-           
+     
          }
 
 
@@ -767,6 +763,19 @@ void RuleOfThree( Hand* HandID,RuleOfThreeParts* ROfTHand){ // MUST be initializ
          // Can later add a continuation PURELY for data collection reasons, If the third is found as expcted, ! point to its accuracy on the track record,
          
        }
+
+             if (i > 0 && ROfTHand->CountToThree[i].price < ROfTHand->CountToThree[i-1].price | ROfTHand->CountToThree[2].Found == true )
+           { 
+           printf(" Trying again %s  %d\n", HandID->ID, i);
+           for (int b = 0; b < 3; b++)
+           {ROfTHand->CountToThree[b].Found = false;
+        HandID->Activation = false;
+    ROfTHand->NextTickToCheck = ROfTHand->CountToThree[1].Tick;
+    ROfTHand->CountToThree[b].price = 0;
+    HandID->ActivationRate = 0; // Do i need to set it to zero ? Nope, but I might use the visual in the future in a way thatll make this matter.
+        }
+           }
+           
     }
 }
 
@@ -1592,7 +1601,7 @@ void BrokerADeal(){ // gets called NON STOP, always checkign for a trade
 if (Buy == true || Sell == true)
 {//ToastNotification("Thinking..!", 0);
      if (RLMODE == 0 && Buy == true)
-    { JudgePerformence();
+    {//JudgePerformence();
         DoIt = true;
     } 
 
@@ -3014,7 +3023,7 @@ for (int d = 0; d < strlen(ToastNotif.Text); d++)
 }
 
 
-strcpy(GUITextBox[0].Text, "$FTM!");// "YOU ARE A KING*WE ARE APPLYING TO JANE STREET.*ALL OTHERS CANT COMPETE!");
+strcpy(GUITextBox[0].Text, "$BTC!");// "YOU ARE A KING*WE ARE APPLYING TO JANE STREET.*ALL OTHERS CANT COMPETE!");
 TypeTextToScreen(&GUITextBox[0], 1, 860, 10);
 
 for (int d = 0; d < strlen(GUITextBox[0].Text); d++)
@@ -3092,7 +3101,7 @@ char Volumebuffer[100] = "Volume $";
 char Vbuffer[100];
 if (Simul == true)
 {
-snprintf(Vbuffer, sizeof(Vbuffer), "%.2lf Billion", GlobalVolume);
+snprintf(Vbuffer, sizeof(Vbuffer), "%.3lf Billion", GlobalVolume);
 }
 else {
 snprintf(Vbuffer, sizeof(Vbuffer), "%.2lf", GlobalVolume);
@@ -3641,7 +3650,7 @@ if (Simul == false)
          SDL_ClearAudioStream(stream);
 SDL_free(audioData);
 audioData = NULL;
-          SDL_LoadWAV("audio/OF.wav", &spec, &audioData, &audioLength);
+          SDL_LoadWAV("audio/OrderFilled.wav", &spec, &audioData, &audioLength);
 
               SDL_ResumeAudioStreamDevice(stream);
                            SDL_PutAudioStreamData(stream,
@@ -3711,7 +3720,7 @@ if (Simul == true)
      SDL_ClearAudioStream(stream);
 SDL_free(audioData);
 audioData = NULL;
-          SDL_LoadWAV("audio/OF.wav", &spec, &audioData, &audioLength);
+          SDL_LoadWAV("audio/OrderFilled.wav", &spec, &audioData, &audioLength);
 
               SDL_ResumeAudioStreamDevice(stream);
                            SDL_PutAudioStreamData(stream,
