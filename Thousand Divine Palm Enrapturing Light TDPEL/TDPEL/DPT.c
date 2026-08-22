@@ -719,65 +719,95 @@ RuleOfThreeParts* RuleOfThreeBinder[4] = {&One, &Four, &Five, &Six};
 
 
 
-void RuleOfThree( Hand* HandID,RuleOfThreeParts* ROfTHand){ // MUST be initialized NextTick to CHeck is 0, Tick vals are 0 through count to three, Magnitude default 1, First point default NOT FOUDN, starts at tick 0
+void RuleOfThree( Hand* HandID,RuleOfThreeParts* ROfTHand){ // MUST be initialized NextTick to CHeck is 0, Tick vals are 0 through count to three, Magnitude default 1, First point default NOT FOUND, starts at tick 0
+
+
+
+    //for (int Y = 0; Y < 2; Y++)
+    //{ //Ensure it doesnt lag behind on Retries
+    
+    
+    int Next = 0;
+    for (int L = 0; L < 3; L++)
+    {
+        if ( ROfTHand->CountToThree[L].Found == false)
+        {
+            Next = L;
+            break;
+        }
+        
+    }
     
       
-          for (int i = 0; i < 3; i++)
-            {
-        if (ROfTHand->NextTickToCheck + ROfTHand->Magnitude  < AlgoTick) // If i have them re -search will need more math to source a new working starting tick
-    { 
-       if (HandID->Activation == false)
-       {
+          //  printf("Point %d Cleared Check 1 for %s  AT Tick %d LOOKING FOR %d\n",i, HandID->ID,AlgoTick, ROfTHand->NextTickToCheck + ROfTHand->Magnitude );
+        if (ROfTHand->NextTickToCheck + ROfTHand->Magnitude  <= AlgoTick) // If i have them re -search will need more math to source a new working starting tick
+    {   //printf("Point %d Cleared Check 2 for %s  AT Tick %d\n",i, HandID->ID,ROfTHand->CountToThree[i].Tick );
+      
         double price = 0;
          if (ROfTHand->CountToThree[2].Found == false)
          { //printf(" SEARCHING Check %s\n", HandID->ID);
            for (int k = 0; k < ROfTHand->Magnitude; k++)
            {
             price = GetPriceAtTick(ROfTHand->NextTickToCheck + k); // If 0 gets the first line 1 gets the seconds
-            ROfTHand->CountToThree[i].price = ((ROfTHand->CountToThree[i].price * k) + price) / (k + 1); // Should work, if not remove parantehses on K + 1
-           }
-         
-             if ( ROfTHand->CountToThree[i].price > ROfTHand->CountToThree[i-1].price )
-           { 
-            ROfTHand->CountToThree[i].Found = true;
-            ROfTHand->CountToThree[i].Tick = ROfTHand->NextTickToCheck;
-            ROfTHand->NextTickToCheck = ROfTHand->CountToThree[i].Tick + ROfTHand->Magnitude;
-              printf("Point %d Found for %s  AT Tick %d\n",i, HandID->ID,ROfTHand->CountToThree[i].Tick );
+            ROfTHand->CountToThree[Next].price = ((ROfTHand->CountToThree[Next].price * k) + price) / (k + 1); // Should work, if not remove parantehses on K + 1
            }
 
+
+          printf("TRYING Point %d for %s AT Tick %d\n",Next, HandID->ID, ROfTHand->NextTickToCheck);
+          
+
+             if (Next == 0  && ROfTHand->CountToThree[Next].Found == false)
+           {
+             ROfTHand->CountToThree[Next].Found = true;
+            ROfTHand->CountToThree[Next].Tick = ROfTHand->NextTickToCheck;
+            ROfTHand->NextTickToCheck = ROfTHand->CountToThree[Next].Tick + ROfTHand->Magnitude;
+              printf("Point %d Found for %s  AT Tick %d\n",Next, HandID->ID,ROfTHand->CountToThree[Next].Tick );
+           }
+           
+
+             if (Next >= 1  && ROfTHand->CountToThree[Next].price >= ROfTHand->CountToThree[Next-1].price && ROfTHand->CountToThree[Next].Found == false )
+           { 
+            
+            ROfTHand->CountToThree[Next].Found = true;
+            ROfTHand->CountToThree[Next].Tick = ROfTHand->NextTickToCheck;
+            ROfTHand->NextTickToCheck = ROfTHand->CountToThree[Next].Tick + ROfTHand->Magnitude;
+              printf("Point %d Found GOOP for %s  AT Tick %d\n",Next, HandID->ID,ROfTHand->CountToThree[Next].Tick );
+           }
+
+            if (ROfTHand->CountToThree[1].Found == true)
+         { printf("Rule Of Three Hand %s Found at Tick: %d \n", HandID->ID,ROfTHand->CountToThree[Next].Tick );
+           HandID->Activation = true; 
+           HandID->ActivationRate = 100;
+         }
      
          }
 
-
+       // }
 
          
-         if (ROfTHand->CountToThree[1].Found == true)
-         { //printf("Rule Of Three Hand %s Found at Tick: %d \n", HandID->ID,ROfTHand->CountToThree[i].Tick );
-           HandID->Activation = true;
-           HandID->ActivationRate = 100;
-         }
+        
 
-         if (ROfTHand->CountToThree[2].Found == true)
-         { // Add to track record that it was accurate 
-        }
-         // Can later add a continuation PURELY for data collection reasons, If the third is found as expcted, ! point to its accuracy on the track record,
          
-       }
-
-             if (i > 0 && ROfTHand->CountToThree[i].price < ROfTHand->CountToThree[i-1].price | ROfTHand->CountToThree[2].Found == true )
+      
+ 
+             if (Next >= 1 && ROfTHand->CountToThree[Next].price <= ROfTHand->CountToThree[Next-1].price | ROfTHand->CountToThree[2].Found == true )
            { 
-           printf(" Trying again %s  %d\n", HandID->ID, i);
+printf("Trying Again for %s  Point %d AT Tick %d WAS LOOKING THRU TO %d\n", HandID->ID, Next, ROfTHand->NextTickToCheck, ROfTHand->NextTickToCheck + ROfTHand->Magnitude );
+              if (ROfTHand->CountToThree[2].Found == true)
+         { /* Add to track record that it was accurate */ }
+            
+           printf(" Trying again %s  %d\n", HandID->ID, Next);
            for (int b = 0; b < 3; b++)
            {ROfTHand->CountToThree[b].Found = false;
-        HandID->Activation = false;
-    ROfTHand->NextTickToCheck = ROfTHand->CountToThree[1].Tick;
-    ROfTHand->CountToThree[b].price = 0;
-    HandID->ActivationRate = 0; // Do i need to set it to zero ? Nope, but I might use the visual in the future in a way thatll make this matter.
-        }
+            HandID->Activation = false;
+            ROfTHand->NextTickToCheck = ROfTHand->CountToThree[0].Tick + ROfTHand->Magnitude;
+            ROfTHand->CountToThree[b].price = 0;
+            HandID->ActivationRate = 0; // Do i need to set it to zero ? Nope, but I might use the visual in the future in a way thatll make this matter.
            }
+        }
            
     }
-}
+
 
 }
 
@@ -3870,7 +3900,7 @@ for (int i = 0; i < 12; i++) {
 
     Hand* Rh = Righthands[i];
     RMaxWeight += Rh->Weight.Weight;
-
+dots[Rh->IDNUM-1].height = 0;
     if (Rh->Activation) {
  if (RLMODE == 0)
         {
@@ -3938,7 +3968,7 @@ LTotalActive = 0;
 for (int i = 0; i < 12; i++) {
     Hand* Lh = Lefthands[i];
     LMaxWeight += Lh->Weight.Weight;
-   
+   dots[Lh->IDNUM-1].height = 0;
     if (Lh->Activation) {
 
         if (RLMODE == 1)
