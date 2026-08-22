@@ -723,8 +723,8 @@ void RuleOfThree( Hand* HandID,RuleOfThreeParts* ROfTHand){ // MUST be initializ
 
 
 
-    //for (int Y = 0; Y < 2; Y++)
-    //{ //Ensure it doesnt lag behind on Retries
+    for (int Y = 0; Y < 3; Y++)
+    { //Ensure it doesnt lag behind on Retries
     
     
     int Next = 0;
@@ -753,7 +753,7 @@ void RuleOfThree( Hand* HandID,RuleOfThreeParts* ROfTHand){ // MUST be initializ
            }
 
 
-          printf("TRYING Point %d for %s AT Tick %d\n",Next, HandID->ID, ROfTHand->NextTickToCheck);
+         // printf("TRYING Point %d for %s AT Tick %d\n",Next, HandID->ID, ROfTHand->NextTickToCheck);
           
 
              if (Next == 0  && ROfTHand->CountToThree[Next].Found == false)
@@ -761,7 +761,7 @@ void RuleOfThree( Hand* HandID,RuleOfThreeParts* ROfTHand){ // MUST be initializ
              ROfTHand->CountToThree[Next].Found = true;
             ROfTHand->CountToThree[Next].Tick = ROfTHand->NextTickToCheck;
             ROfTHand->NextTickToCheck = ROfTHand->CountToThree[Next].Tick + ROfTHand->Magnitude;
-              printf("Point %d Found for %s  AT Tick %d\n",Next, HandID->ID,ROfTHand->CountToThree[Next].Tick );
+            //  printf("Point %d Found for %s  AT Tick %d\n",Next, HandID->ID,ROfTHand->CountToThree[Next].Tick );
            }
            
 
@@ -771,18 +771,18 @@ void RuleOfThree( Hand* HandID,RuleOfThreeParts* ROfTHand){ // MUST be initializ
             ROfTHand->CountToThree[Next].Found = true;
             ROfTHand->CountToThree[Next].Tick = ROfTHand->NextTickToCheck;
             ROfTHand->NextTickToCheck = ROfTHand->CountToThree[Next].Tick + ROfTHand->Magnitude;
-              printf("Point %d Found GOOP for %s  AT Tick %d\n",Next, HandID->ID,ROfTHand->CountToThree[Next].Tick );
+            //  printf("Point %d Found for %s  AT Tick %d\n",Next, HandID->ID,ROfTHand->CountToThree[Next].Tick );
            }
 
             if (ROfTHand->CountToThree[1].Found == true)
-         { printf("Rule Of Three Hand %s Found at Tick: %d \n", HandID->ID,ROfTHand->CountToThree[Next].Tick );
+         { //printf("Rule Of Three Hand %s Found at Tick: %d \n", HandID->ID,ROfTHand->CountToThree[Next].Tick );
            HandID->Activation = true; 
            HandID->ActivationRate = 100;
          }
      
          }
 
-       // }
+        
 
          
         
@@ -792,11 +792,11 @@ void RuleOfThree( Hand* HandID,RuleOfThreeParts* ROfTHand){ // MUST be initializ
  
              if (Next >= 1 && ROfTHand->CountToThree[Next].price <= ROfTHand->CountToThree[Next-1].price | ROfTHand->CountToThree[2].Found == true )
            { 
-printf("Trying Again for %s  Point %d AT Tick %d WAS LOOKING THRU TO %d\n", HandID->ID, Next, ROfTHand->NextTickToCheck, ROfTHand->NextTickToCheck + ROfTHand->Magnitude );
+//printf("Trying Again for %s  Point %d AT Tick %d WAS LOOKING THRU TO %d\n", HandID->ID, Next, ROfTHand->NextTickToCheck, ROfTHand->NextTickToCheck + ROfTHand->Magnitude );
               if (ROfTHand->CountToThree[2].Found == true)
          { /* Add to track record that it was accurate */ }
             
-           printf(" Trying again %s  %d\n", HandID->ID, Next);
+         //  printf(" Trying again %s  %d\n", HandID->ID, Next);
            for (int b = 0; b < 3; b++)
            {ROfTHand->CountToThree[b].Found = false;
             HandID->Activation = false;
@@ -808,7 +808,7 @@ printf("Trying Again for %s  Point %d AT Tick %d WAS LOOKING THRU TO %d\n", Hand
            
     }
 
-
+}
 }
 
 void HandTypePloint( Hand* HandID, HandTypePlointArch* Shape) {
@@ -992,18 +992,18 @@ message HandTypeArcsettings;
 
 void TypeTextToScreen (message *Message, int Size, float StartingX, float StartingY){
 
-if (GlobalPTick == 0){
+//if (GlobalPTick == 0){
 Message->StartingY = StartingY;
 Message->StartingX = StartingX;
-Message->Size = Size; // Is this right? only at tick 0?
-}
+Message->Size = Size; 
+//}
 
 if (Message->LastMessage != Message->Text){
-  //  printf(" Message: %s\n", Message->Text);
+   //printf(" Message: %s\n", Message->Text);
 char CapitalLEtters[]="ABCDEFGHIJKLMNOPQRSTUVWXYZ. 1234567890*!$%";
 char LowerCaseLetters[]="abcdefghijklmnopqrstuvwxyz. 1234567890*!$%";
 
-for (int i = 0; i < strlen(Message->Text); i++){
+for (int i = 0; i < (int)strlen(Message->Text); i++){
 char Letter = Message->Text[i];
 
 for (int j = 0; j < strlen(CapitalLEtters); j++){
@@ -2618,7 +2618,7 @@ Hand I;
 I.IDNUM = 1;
 strcpy(I.ID, "I");
 strcpy(I.Name, "Rule Of Three!");
-strcpy(I.Descriptor, "The First Hand*Not Sure what Algorithm*Im putting here yet!");
+strcpy(I.Descriptor, "Gamblers Fallacy..*Like they wanted you* to win. BEHOLD TRUE WISDOM!");
 I.PageType = 1;
 I.Weight = SRank;
 I.ActivationRate = 00.00; // make a for loop to initialize these all as 00.00
@@ -2647,7 +2647,7 @@ CopyBoosts(&II.virt, &BoostDefault); // gotta copy this over to all hands
 Hand III;
 III.IDNUM = 3;
 strcpy(III.ID, "III");
-strcpy(III.Name, "Sell Sword!");
+strcpy(III.Name, "Sell Sword !");
 strcpy(III.Descriptor, "RANDOM!");
 III.PageType = 2;
 III.Weight = SRank;
@@ -2662,8 +2662,8 @@ CopyBoosts(&III.virt, &BoostDefault); // gotta copy this over to all hands
 Hand IV;
 IV.IDNUM = 4;
 strcpy(IV.ID, "IV");
-strcpy(IV.Name, "Rule Of Thiry!");
-strcpy(IV.Descriptor, "RANDOM!");
+strcpy(IV.Name, "Rule Of Thirty !");
+strcpy(IV.Descriptor, "Rule of Three But 10 tick*candles. Averages 10*Ticks together into one*If Higher than the first*Its considered ACTIVATED !");
 IV.PageType = 1;
 IV.Weight = SRank;
 IV.ActivationRate = 00.00;
@@ -3131,10 +3131,10 @@ char Volumebuffer[100] = "Volume $";
 char Vbuffer[100];
 if (Simul == true)
 {
-snprintf(Vbuffer, sizeof(Vbuffer), "%.3lf Billion", GlobalVolume);
+snprintf(Vbuffer, sizeof(Vbuffer), "%.3lf Billion", GlobalVolume); // Just because we know the data source gave us the volume as Fractions of billions INSTEAD of a whole number, Strange.
 }
 else {
-snprintf(Vbuffer, sizeof(Vbuffer), "%.2lf", GlobalVolume);
+snprintf(Vbuffer, sizeof(Vbuffer), "%.3lf", GlobalVolume);
 }
 strcat(Volumebuffer,Vbuffer);
 strcat(Volumebuffer, "!");
